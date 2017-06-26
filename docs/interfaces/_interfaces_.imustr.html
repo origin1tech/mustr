@@ -90,12 +90,14 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#engine" class="tsd-kind-icon">Engine</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#components" class="tsd-kind-icon">components</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#cwd" class="tsd-kind-icon">cwd</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#log" class="tsd-kind-icon">log</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#options" class="tsd-kind-icon">options</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#outputpath" class="tsd-kind-icon">output<wbr>Path</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#registerpath" class="tsd-kind-icon">register<wbr>Path</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#renderer" class="tsd-kind-icon">renderer</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#templates" class="tsd-kind-icon">templates</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#templatesglob" class="tsd-kind-icon">templates<wbr>Glob</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#templatespath" class="tsd-kind-icon">templates<wbr>Path</a></li>
@@ -105,13 +107,17 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#configure" class="tsd-kind-icon">configure</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#getrollbacks" class="tsd-kind-icon">get<wbr>Rollbacks</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#init" class="tsd-kind-icon">init</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#inject" class="tsd-kind-icon">inject</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#load" class="tsd-kind-icon">load</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#loadrollbacks" class="tsd-kind-icon">load<wbr>Rollbacks</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#register" class="tsd-kind-icon">register</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#registergroup" class="tsd-kind-icon">register<wbr>Group</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#registercomponent" class="tsd-kind-icon">register<wbr>Component</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#removerollbacks" class="tsd-kind-icon">remove<wbr>Rollbacks</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#render" class="tsd-kind-icon">render</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#rollback" class="tsd-kind-icon">rollback</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#saverollbacks" class="tsd-kind-icon">save<wbr>Rollbacks</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#setengine" class="tsd-kind-icon">set<wbr>Engine</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_interfaces_.imustr.html#transformcase" class="tsd-kind-icon">transform<wbr>Case</a></li>
 							</ul>
@@ -122,12 +128,22 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="components" class="tsd-anchor"></a>
-					<h3>components</h3>
-					<div class="tsd-signature tsd-kind-icon">components<span class="tsd-signature-symbol">:</span> <a href="_interfaces_.icomponents.html" class="tsd-signature-type">IComponents</a></div>
+					<a name="engine" class="tsd-anchor"></a>
+					<h3>Engine</h3>
+					<div class="tsd-signature tsd-kind-icon">Engine<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L125">interfaces.ts:125</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L126">interfaces.ts:126</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="components" class="tsd-anchor"></a>
+					<h3>components</h3>
+					<div class="tsd-signature tsd-kind-icon">components<span class="tsd-signature-symbol">:</span> <a href="_interfaces_.imap.html" class="tsd-signature-type">IMap</a><span class="tsd-signature-symbol">&lt;</span><a href="_interfaces_.icomponent.html" class="tsd-signature-type">IComponent</a><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L135">interfaces.ts:135</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -137,7 +153,7 @@
 					<div class="tsd-signature tsd-kind-icon">cwd<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L118">interfaces.ts:118</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L128">interfaces.ts:128</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -147,7 +163,7 @@
 					<div class="tsd-signature tsd-kind-icon">log<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ILogger</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L119">interfaces.ts:119</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L129">interfaces.ts:129</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -157,7 +173,7 @@
 					<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <a href="_interfaces_.imustroptions.html" class="tsd-signature-type">IMustrOptions</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L126">interfaces.ts:126</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L136">interfaces.ts:136</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -167,7 +183,7 @@
 					<div class="tsd-signature tsd-kind-icon">output<wbr>Path<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L122">interfaces.ts:122</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L132">interfaces.ts:132</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -177,17 +193,27 @@
 					<div class="tsd-signature tsd-kind-icon">register<wbr>Path<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L120">interfaces.ts:120</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L130">interfaces.ts:130</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="renderer" class="tsd-anchor"></a>
+					<h3>renderer</h3>
+					<div class="tsd-signature tsd-kind-icon">renderer<span class="tsd-signature-symbol">:</span> <a href="../modules/_interfaces_.html#rendermethod" class="tsd-signature-type">RenderMethod</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L127">interfaces.ts:127</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="templates" class="tsd-anchor"></a>
 					<h3>templates</h3>
-					<div class="tsd-signature tsd-kind-icon">templates<span class="tsd-signature-symbol">:</span> <a href="_interfaces_.itemplates.html" class="tsd-signature-type">ITemplates</a></div>
+					<div class="tsd-signature tsd-kind-icon">templates<span class="tsd-signature-symbol">:</span> <a href="_interfaces_.imap.html" class="tsd-signature-type">IMap</a><span class="tsd-signature-symbol">&lt;</span><a href="_interfaces_.itemplate.html" class="tsd-signature-type">ITemplate</a><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L124">interfaces.ts:124</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L134">interfaces.ts:134</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -197,7 +223,7 @@
 					<div class="tsd-signature tsd-kind-icon">templates<wbr>Glob<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L123">interfaces.ts:123</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L133">interfaces.ts:133</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -207,7 +233,7 @@
 					<div class="tsd-signature tsd-kind-icon">templates<wbr>Path<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L121">interfaces.ts:121</a></li>
+							<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L131">interfaces.ts:131</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -226,7 +252,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L138">interfaces.ts:138</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L148">interfaces.ts:148</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -243,7 +269,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L139">interfaces.ts:139</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L149">interfaces.ts:149</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -263,7 +289,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L140">interfaces.ts:140</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L150">interfaces.ts:150</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -283,6 +309,29 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getrollbacks" class="tsd-anchor"></a>
+					<h3>get<wbr>Rollbacks</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Rollbacks<span class="tsd-signature-symbol">(</span>display<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_interfaces_.imap.html" class="tsd-signature-type">IMap</a><span class="tsd-signature-symbol">&lt;</span><a href="_interfaces_.irollbackstat.html" class="tsd-signature-type">IRollbackStat</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L162">interfaces.ts:162</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> display: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_interfaces_.imap.html" class="tsd-signature-type">IMap</a><span class="tsd-signature-symbol">&lt;</span><a href="_interfaces_.irollbackstat.html" class="tsd-signature-type">IRollbackStat</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="init" class="tsd-anchor"></a>
 					<h3>init</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -292,7 +341,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L128">interfaces.ts:128</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L138">interfaces.ts:138</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -316,7 +365,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L150">interfaces.ts:150</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L164">interfaces.ts:164</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -333,7 +382,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L151">interfaces.ts:151</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L165">interfaces.ts:165</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -368,9 +417,32 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L129">interfaces.ts:129</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L139">interfaces.ts:139</a></li>
 								</ul>
 							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="loadrollbacks" class="tsd-anchor"></a>
+					<h3>load<wbr>Rollbacks</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">load<wbr>Rollbacks<span class="tsd-signature-symbol">(</span>reindex<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L161">interfaces.ts:161</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> reindex: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></h4>
 						</li>
 					</ul>
@@ -386,7 +458,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L132">interfaces.ts:132</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L142">interfaces.ts:142</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -400,7 +472,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L133">interfaces.ts:133</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L143">interfaces.ts:143</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -420,17 +492,17 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="registergroup" class="tsd-anchor"></a>
-					<h3>register<wbr>Group</h3>
+					<a name="registercomponent" class="tsd-anchor"></a>
+					<h3>register<wbr>Component</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">register<wbr>Group<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, series<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
-						<li class="tsd-signature tsd-kind-icon">register<wbr>Group<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, <span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">register<wbr>Component<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, series<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></li>
+						<li class="tsd-signature tsd-kind-icon">register<wbr>Component<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, <span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L135">interfaces.ts:135</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L145">interfaces.ts:145</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -442,12 +514,12 @@
 									<h5>series: <span class="tsd-signature-type">boolean</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></h4>
 						</li>
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L136">interfaces.ts:136</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L146">interfaces.ts:146</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -459,7 +531,33 @@
 									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>args: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="removerollbacks" class="tsd-anchor"></a>
+					<h3>remove<wbr>Rollbacks</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Rollbacks<span class="tsd-signature-symbol">(</span>by<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Date</span>, save<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L159">interfaces.ts:159</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>by: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Date</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> save: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -477,7 +575,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L142">interfaces.ts:142</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L152">interfaces.ts:152</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -494,7 +592,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L143">interfaces.ts:143</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L153">interfaces.ts:153</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -514,7 +612,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L144">interfaces.ts:144</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L154">interfaces.ts:154</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -534,7 +632,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L145">interfaces.ts:145</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L155">interfaces.ts:155</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -557,7 +655,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L146">interfaces.ts:146</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L156">interfaces.ts:156</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -589,25 +687,48 @@
 					<a name="rollback" class="tsd-anchor"></a>
 					<h3>rollback</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">rollback<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, output<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">rollback<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span>, output<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L148">interfaces.ts:148</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L158">interfaces.ts:158</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> name: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> output: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="saverollbacks" class="tsd-anchor"></a>
+					<h3>save<wbr>Rollbacks</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">save<wbr>Rollbacks<span class="tsd-signature-symbol">(</span>prune<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L160">interfaces.ts:160</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> prune: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_interfaces_.imustr.html" class="tsd-signature-type">IMustr</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -621,7 +742,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L130">interfaces.ts:130</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L140">interfaces.ts:140</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -647,7 +768,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/727ee45/src/interfaces.ts#L156">interfaces.ts:156</a></li>
+									<li>Defined in <a href="https://github.com/origin1tech/mustr/blob/7659395/src/interfaces.ts#L170">interfaces.ts:170</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -688,16 +809,13 @@
 						<a href="_interfaces_.icomponent.html" class="tsd-kind-icon">IComponent</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_interfaces_.icomponents.html" class="tsd-kind-icon">IComponents</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_interfaces_.iconfig.html" class="tsd-kind-icon">IConfig</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_interfaces_.igroupoptions.html" class="tsd-kind-icon">IGroup<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_interfaces_.iinject.html" class="tsd-kind-icon">IInject</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-external-module tsd-has-type-parameter">
+						<a href="_interfaces_.imap.html" class="tsd-kind-icon">IMap</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_interfaces_.imetadata.html" class="tsd-kind-icon">IMetadata</a>
@@ -710,6 +828,9 @@
 					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_interfaces_.imustr.html" class="tsd-kind-icon">IMustr</a>
 						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_interfaces_.imustr.html#engine" class="tsd-kind-icon">Engine</a>
+							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="_interfaces_.imustr.html#components" class="tsd-kind-icon">components</a>
 							</li>
@@ -729,6 +850,9 @@
 								<a href="_interfaces_.imustr.html#registerpath" class="tsd-kind-icon">register<wbr>Path</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_interfaces_.imustr.html#renderer" class="tsd-kind-icon">renderer</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="_interfaces_.imustr.html#templates" class="tsd-kind-icon">templates</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
@@ -741,6 +865,9 @@
 								<a href="_interfaces_.imustr.html#configure" class="tsd-kind-icon">configure</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_interfaces_.imustr.html#getrollbacks" class="tsd-kind-icon">get<wbr>Rollbacks</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_interfaces_.imustr.html#init" class="tsd-kind-icon">init</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
@@ -750,16 +877,25 @@
 								<a href="_interfaces_.imustr.html#load" class="tsd-kind-icon">load</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_interfaces_.imustr.html#loadrollbacks" class="tsd-kind-icon">load<wbr>Rollbacks</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_interfaces_.imustr.html#register" class="tsd-kind-icon">register</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_interfaces_.imustr.html#registergroup" class="tsd-kind-icon">register<wbr>Group</a>
+								<a href="_interfaces_.imustr.html#registercomponent" class="tsd-kind-icon">register<wbr>Component</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_interfaces_.imustr.html#removerollbacks" class="tsd-kind-icon">remove<wbr>Rollbacks</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_interfaces_.imustr.html#render" class="tsd-kind-icon">render</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_interfaces_.imustr.html#rollback" class="tsd-kind-icon">rollback</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_interfaces_.imustr.html#saverollbacks" class="tsd-kind-icon">save<wbr>Rollbacks</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_interfaces_.imustr.html#setengine" class="tsd-kind-icon">set<wbr>Engine</a>
@@ -775,22 +911,22 @@
 						<a href="_interfaces_.imustroptions.html" class="tsd-kind-icon">IMustr<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_interfaces_.ipartials.html" class="tsd-kind-icon">IPartials</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_interfaces_.iregister.html" class="tsd-kind-icon">IRegister</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_interfaces_.iregisterconfig.html" class="tsd-kind-icon">IRegister<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_interfaces_.irollbacks.html" class="tsd-kind-icon">IRollbacks</a>
+						<a href="_interfaces_.irollback.html" class="tsd-kind-icon">IRollback</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+						<a href="_interfaces_.irollbackcontainer.html" class="tsd-kind-icon">IRollback<wbr>Container</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+						<a href="_interfaces_.irollbackstat.html" class="tsd-kind-icon">IRollback<wbr>Stat</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_interfaces_.itemplate.html" class="tsd-kind-icon">ITemplate</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_interfaces_.itemplates.html" class="tsd-kind-icon">ITemplates</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
 						<a href="../modules/_interfaces_.html#afterrender" class="tsd-kind-icon">After<wbr>Render</a>
@@ -806,6 +942,9 @@
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
 						<a href="../modules/_interfaces_.html#rendermethod" class="tsd-kind-icon">Render<wbr>Method</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
+						<a href="../modules/_interfaces_.html#textcasing" class="tsd-kind-icon">Text<wbr>Casing</a>
 					</li>
 				</ul>
 			</nav>

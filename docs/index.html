@@ -69,8 +69,8 @@
 					</p>
 				<br/></p>
 				<h2 id="description">Description</h2>
-				<p>Minimalistic scaffolding tool using Mustache Templates</p>
-				<p>Scaffolding can be a time saver and helps in consistency for teams. Yeoman is perhaps the most popular tool for this requirement. However building out your own generators can be cumbersome and time consuming. In the end the need is often no more than passing in some params then rendering those params in your template. Mustr attepts to fill that need in a simplistic and declarative way without the hassle and time investment.</p>
+				<p>Minimalistic scaffolding tool using Mustache Templates with handy rollback feature.</p>
+				<p>Scaffolding can be a time saver and helps in consistency for teams. Yeoman is perhaps the most popular tool for this requirement. However building out your own generators can be cumbersome and time consuming. In the end the need is often no more than passing in some params then rendering those params in your template. Mustr attempts to fill that need in a simplistic and declarative way without the hassle and time investment. Once you buy in you&#39;ll find it rather trivial to flesh out templates.</p>
 				<h2 id="installing-initialization">Installing &amp; Initialization</h2>
 				<pre><code class="lang-sh">$ npm install mustr -g
 </code></pre>
@@ -85,13 +85,28 @@
 					<li>configDir the configuration directory from root usually &quot;./mustr&quot;.</li>
 					<li>outputDir the output or where your source files are usually &quot;./src&quot;.</li>
 					<li>templateExt the extension used for your templates usually &quot;.tpl&quot;.</li>
+					<li>autoLoad when true auto loads templates/config, only need to set to false if loading Mustr manually.</li>
 					<li>autoRegister auto registers found templates, manually register to override.</li>
+					<li>maxRollbacks the maximum number of rollbacks to store before pruning.</li>
 				</ul>
+				<p>The following properties are valid only when passing a config
+					object into Mustr manually when initializing instance. These
+					options cannot be set in your mustr.json file however you can
+				set the engine and renderer in your register.js file by calling:</p>
+				<ul>
+					<li>Engine the custom compiling engine to use instead of Mustache.</li>
+					<li>renderer the rendering function to render out the template.</li>
+				</ul>
+				<pre><code class="lang-js">mu.setEngine(Compiler, renderer);
+</code></pre>
+				<p>see below for an example using Jade.</p>
 				<pre><code class="lang-json">{
-  <span class="hljs-attr">"configDir"</span>: <span class="hljs-string">"./mustr"</span>,
-  <span class="hljs-attr">"outputDir"</span>: <span class="hljs-string">"./src"</span>,
-  <span class="hljs-attr">"templateExt"</span>: <span class="hljs-string">".tpl"</span>,
-  <span class="hljs-attr">"autoRegister"</span>: <span class="hljs-literal">true</span>
+  &quot;configDir&quot;: &quot;./mustr&quot;,
+  &quot;outputDir&quot;: &quot;./src&quot;,
+  &quot;templateExt&quot;: &quot;.tpl&quot;,
+  &quot;autoLoad&quot;: true,
+  &quot;autoRegister&quot;: true,
+  &quot;maxRollbacks&quot; 15
 }
 </code></pre>
 				<h2 id="defining-templates">Defining Templates</h2>
@@ -105,6 +120,10 @@
 					<li>type - the suffix name if any that should be applied to the name.</li>
 					<li>appendType - appends the component name above to the filename about.service.ts</li>
 					<li>casing - the casing strategy for naming the template when rendered. (ex: title for class names)</li>
+					<li>filenameCasing - same as above but will set the casing for the filename itself.</li>
+					<li>outputDir - changes the relative base path for generated templates instead of you global config.</li>
+					<li>outputPath - a static output path to be used rather than relative to config.</li>
+					<li>rename - useful when generating components, will rename the generated template to this name.</li>
 					<li>injects - definitions that should be inserted in other files upon rendering.</li>
 				</ul>
 				<p>All other properties as seen below are custom. Again see above on front matter and yaml
@@ -149,7 +168,7 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 				<ul>
 					<li>name the name of the file/component without it&#39;s &#39;type&#39; suffix.</li>
 					<li>fullname the above name with the type suffix appened if exists.</li>
-					<li>group the group name if any the generated template belongs to.</li>
+					<li>group the group name if any the generated template belongs to basically the component name.</li>
 					<li>path the output path of the file being generated.</li>
 					<li>from the relative path to the generated file from the file you injected to.</li>
 					<li>ext the file extention type.</li>
@@ -171,10 +190,10 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 				<p>For example consider a template named &quot;base.service.tpl&quot;. It might reside in a folder called &quot;services&quot;. Mustr ignores folder structures and focuses on the file name itself. Just makes it easier when looking up templates for registration. For this reason it is important to make all your file names regardless of structure uniquely named although this is not required.</p>
 				<p><strong>Example Register.js</strong></p>
 				<pre><code class="lang-js">
-<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">mu, Compiler</span>) </span>{
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">mu, Engine</span>) </span>{
 
   <span class="hljs-comment">// mu is the Mustr instance.</span>
-  <span class="hljs-comment">// Compiler is the template compiling engine. (currently Mustache).</span>
+  <span class="hljs-comment">// Engine is the template compiling engine. (currently Mustache).</span>
 
   <span class="hljs-comment">// NAME - the name you wish to register the template under.</span>
   <span class="hljs-comment">// TEMPLATE - the name, path or static string template to use for the registration.</span>
@@ -207,15 +226,15 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 
   mu.register(<span class="hljs-string">'DB'</span>, <span class="hljs-string">'service'</span>);
 
-  <span class="hljs-comment">/* Group Register
+  <span class="hljs-comment">/* Component Register
   *******************************************/</span>
 
-  <span class="hljs-comment">// Registering a group allows generating multiple files</span>
+  <span class="hljs-comment">// Registering a component allows generating multiple files</span>
   <span class="hljs-comment">// using a single command. It's important to know that</span>
-  <span class="hljs-comment">// the group templates must be already registered by</span>
+  <span class="hljs-comment">// the component templates must be already registered by</span>
   <span class="hljs-comment">// calling mu.register();</span>
 
-  mu.registerGroup(<span class="hljs-string">'group'</span>, <span class="hljs-string">'template1'</span>, <span class="hljs-string">'template2'</span>);
+  mu.registerComponent(<span class="hljs-string">'group'</span>, <span class="hljs-string">'template1'</span>, <span class="hljs-string">'template2'</span>);
 
   <span class="hljs-comment">/* Partials Register
   *******************************************/</span>
@@ -270,6 +289,22 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 
     });
 
+    <span class="hljs-comment">/* Changing Template Engine
+    *******************************************/</span>
+
+    <span class="hljs-comment">// Don't like Mustache? You can use whatever</span>
+    <span class="hljs-comment">// templating engine you wish. Mustr merely</span>
+    <span class="hljs-comment">// handles some fancy things for paths and</span>
+    <span class="hljs-comment">// front matter/metadata. You can use whatever</span>
+    <span class="hljs-comment">// rendering engine you wish.</span>
+
+    <span class="hljs-keyword">const</span> Jade = <span class="hljs-built_in">require</span>(<span class="hljs-string">'jade'</span>);
+    <span class="hljs-keyword">const</span> renderer = <span class="hljs-function">(<span class="hljs-params">body, meta, <span class="hljs-regexp">/* optional object of partials here */</span></span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> template = jade.compile(body, <span class="hljs-comment">/* jade options */</span>);
+        <span class="hljs-keyword">return</span> template(meta);
+    }
+    mu.setEngine(Jade, renderer);
+
 };
 </code></pre>
 				<h2 id="generating-templates">Generating Templates</h2>
@@ -284,9 +319,9 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 				<p>DbService</p>
 				<h3 id="how-does-that-work-">How Does That Work?</h3>
 				<p><strong>component</strong></p>
-				<p>Because our template front-matter config defines a Suffix generated component names and file names will be automatially suffixed with this value. If you&#39;ve used angular-cli this will be familiar to you and probably what you want for your conventions. To remove this feature simply remove this value from your configuration.</p>
+				<p>Because our template front-matter config defines a type the generated component names and file names will be automatially suffixed with this value. If you&#39;ve used angular-cli this will be familiar to you and probably what you want for your conventions.</p>
 				<p><strong>output path</strong></p>
-				<p>The mustr.json file defines the source root for your projects so all paths are relative to it for template generation. Hence when we generate a template the path you set in your generation command is respected and output to this location.</p>
+				<p>The mustr.json file defines the source root for your projects so all paths are relative to it for template generation. Hence when we generate a template the path you set in your generation command is respected and output to this location. You can also specify in your template&#39;s config that the template has a base &quot;outputDir&quot; which then assumes the template should be generated relative to that specified path rather than the global config path. You can also statically set the path. Imagine for example a LICENSE or README.md. It&#39;s likely these types of files will always output to the same root directory.</p>
 				<p><strong>component name</strong></p>
 				<p>The component name or the ending value you specified in the output path &quot;shared/services/db&quot; in this case &quot;db&quot; is used for the name of the component/template you&#39;re generating. You&#39;ll notice though that the name is auto suffixed like the file path. This results in this case in &quot;DbService&quot;.</p>
 				<p>The filename is auto cased based on your front-matter config using the property &quot;casing&quot;. Valid values are lower, upper, capitalize, title, or camel. Whether you are using suffixes or not Mustr will just figure this out when you specify your desired case. More often than not you want &quot;title&quot; which is essentially titlecase. For anything that is a component/class etc. that&#39;s likely what you want.</p>
@@ -324,6 +359,35 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 <span class="hljs-attr">      find:</span> <span class="hljs-string">'// INJECT'</span>
 <span class="hljs-attr">      strategy:</span> <span class="hljs-string">'after'</span>
 <span class="hljs-attr">      insert:</span> <span class="hljs-string">"import * as _ from 'lodash';"</span>
+</code></pre>
+				<h2 id="rollbacks">Rollbacks</h2>
+				<p>Rollbacks are a handy feature of Mustr. They enable you to quickly rollback to previously generated versions of your components. Not likely that you&#39;ll use this feature often but when you need it, it&#39;s extremely useful.</p>
+				<p><strong>Rollback by ID</strong></p>
+				<pre><code class="lang-sh">$ mu rollback 11388399399-view
+</code></pre>
+				<p>TIP: to view a list of valid rollback ids you can run the command:</p>
+				<pre><code class="lang-sh">$ mu show rollbacks
+</code></pre>
+				<p><strong>Rollback by Index</strong></p>
+				<p>After showing current rollback entries you&#39;ll notice each entry corresponds to an
+					index. You can also specify the index and Mustr will sort out which rollback id
+				it corresponds to. Saves some typing.</p>
+				<pre><code class="lang-sh">$ mu rollback 3
+</code></pre>
+				<p><strong>Rollback by Last</strong></p>
+				<p>You can also call rollback with no arguments and the last rollback id will be
+				automatically selected. Great for whoops I blew that moments.</p>
+				<pre><code class="lang-sh">$ mu rollback
+</code></pre>
+				<p>The above would get the third rollback&#39;s rollback id and then pass to the &quot;rollback&quot; method in Mustr.</p>
+				<p><strong>Rollback Manually</strong></p>
+				<p>WARNING: this merely removes the template, useful in the sense that
+					you can specify the same params you did when you generated it and
+					Mustr will sort out the rest. Essentially say you generated a template
+					and just want to remove it you could press up arrow in your console
+					then change the &quot;g&quot; or &quot;generate&quot; command to &quot;r&quot; or &quot;rollback&quot;.
+				That said always rollback by an id if possible.</p>
+				<pre><code class="lang-sh">$ mu rollback template output/path
 </code></pre>
 				<h2 id="license">License</h2>
 				<p>See <a href="License.md">LICENSE.md</a></p>
