@@ -60,6 +60,16 @@ module.exports = (mu, Engine) => {
 
   // mu.register('name', 'email: {{email}}', { metadata: { email: 'name@email.com } });
 
+  /* Component Register
+  *******************************************/
+
+  // Registering a component allows generating multiple files
+  // using a single command. It's important to know that
+  // the component templates must be already registered by
+  // calling mu.register();
+
+  // mu.registerComponent('group', 'template1', 'template2');
+
   /* Partials Register
   *******************************************/
 
@@ -124,6 +134,6 @@ module.exports = (mu, Engine) => {
   //    const template = jade.compile(body, /* jade options */);
   //    return template(meta);
   // }
-  // mu.setEngine(jade, renderer);
+  // mu.setEngine(Jade, renderer);
 
 };
