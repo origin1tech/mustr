@@ -743,7 +743,6 @@ var Mustr = (function (_super) {
                 // Normalize the template.
                 template = this.configure(name, output, options);
             }
-            console.log(template.metadata);
             if (lodash_1.isPlainObject(name))
                 name = template.name = (template.name || 'none').toLowerCase();
             // If not group generate rollbackId.

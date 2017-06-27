@@ -972,8 +972,6 @@ export class Mustr extends EventEmitter implements IMustr {
 
       }
 
-      console.log(template.metadata);
-
       if (_isPlainObject(name))
         name = template.name = (template.name || 'none').toLowerCase();
 
