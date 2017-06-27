@@ -596,7 +596,6 @@ export class Mustr extends EventEmitter implements IMustr {
         path: template.outputRelative,
         ext: parsedOutput.ext
       };
-
     }
 
     else {
