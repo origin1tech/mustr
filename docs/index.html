@@ -130,7 +130,7 @@
 				in general for how to create objects, arrays and so on.</p>
 				<pre><code class="lang-hbs"><span class="xml">---
 
-config:
+$config:
   ext: .ts
   type: Service
   casing: title
@@ -350,7 +350,7 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 				<p><strong>Inject Inline</strong></p>
 				<p>It is also possible to inject inline within your template file. This is done by creating an array in your yaml front-matter. This is very handy as it will create the import to the foriegn file each time a template of this type is created. No fuss no muss just works.</p>
 				<pre><code class="lang-yaml">
-<span class="hljs-attr">config:</span>
+<span class="hljs-string">$config:</span>
 <span class="hljs-attr">  ext:</span> <span class="hljs-string">.ts</span>
 <span class="hljs-attr">  component:</span> <span class="hljs-string">Service</span>
 <span class="hljs-attr">  casing:</span> <span class="hljs-string">title</span>

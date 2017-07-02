@@ -1,6 +1,6 @@
 ---
 
-config:
+$config:
   ext: .ts
   casing: capitalize
   injects:
