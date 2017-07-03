@@ -814,7 +814,6 @@ var Mustr = (function (_super) {
                 tmpRel = /^\.\./.test(tmpRel) ? tmpRel : './' + tmpRel;
                 template.metadata.$component.paths.push(tmpRel);
             });
-            console.log(template.metadata.$component.paths);
             // Iterate the inject
             template.injects.forEach(function (inj) {
                 var self = _this;

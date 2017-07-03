@@ -1073,8 +1073,6 @@ export class Mustr extends EventEmitter implements IMustr {
 
       });
 
-      console.log(template.metadata.$component.paths);
-
       // Iterate the inject
       template.injects.forEach((inj: IInject) => {
 

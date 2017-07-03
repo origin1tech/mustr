@@ -68,6 +68,10 @@
 						<a href="http://github.com/origin1tech/mustr"><img width="150" src="https://raw.githubusercontent.com/origin1tech/mustr/master/assets/logo.png"></a>
 					</p>
 				<br/></p>
+				<h2 id="quick-note">Quick Note</h2>
+				<p>Look for exmaples and video tutorial coming this week of July 3, 2017. Although Mustr is not
+					overly complicated, appreciate perhaps a little tough to follow at first video will clear it up
+				so look for that in the next several days.</p>
 				<h2 id="description">Description</h2>
 				<p>Minimalistic scaffolding tool using Mustache Templates with handy rollback feature.</p>
 				<p>Scaffolding can be a time saver and helps in consistency for teams. Yeoman is perhaps the most popular tool for this requirement. However building out your own generators can be cumbersome and time consuming. In the end the need is often no more than passing in some params then rendering those params in your template. Mustr attempts to fill that need in a simplistic and declarative way without the hassle and time investment. Once you buy in you&#39;ll find it rather trivial to flesh out templates.</p>
@@ -125,6 +129,10 @@
 					<li>outputPath - a static output path to be used rather than relative to config.</li>
 					<li>rename - useful when generating components, will rename the generated template to this name.</li>
 					<li>injects - definitions that should be inserted in other files upon rendering.</li>
+					<li><p>paths - key value pairs string split by | ex: &#39;./my/path.ts|./my/other/path&#39;</p>
+						<p>Note on paths. The first path is the from path the second is the to path.
+						Essentially the used to get the relative path from the to path.</p>
+					</li>
 				</ul>
 				<p>All other properties as seen below are custom. Again see above on front matter and yaml
 				in general for how to create objects, arrays and so on.</p>
@@ -352,7 +360,7 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 				<pre><code class="lang-yaml">
 <span class="hljs-string">$config:</span>
 <span class="hljs-attr">  ext:</span> <span class="hljs-string">.ts</span>
-<span class="hljs-attr">  component:</span> <span class="hljs-string">Service</span>
+<span class="hljs-attr">  type:</span> <span class="hljs-string">Service</span>
 <span class="hljs-attr">  casing:</span> <span class="hljs-string">title</span>
 <span class="hljs-attr">  injects:</span>
 <span class="hljs-attr">    - filename:</span> <span class="hljs-string">'examples/db.example.tsx'</span>

@@ -3,6 +3,12 @@
 </p>
 <br/>
 
+## Quick Note
+
+Look for exmaples and video tutorial coming this week of July 3, 2017. Although Mustr is not
+overly complicated, appreciate perhaps a little tough to follow at first video will clear it up
+so look for that in the next several days.
+
 ## Description
 
 Minimalistic scaffolding tool using Mustache Templates with handy rollback feature.
@@ -81,6 +87,10 @@ There are four simple fields that are required in your front matter config.
  + outputPath - a static output path to be used rather than relative to config.
  + rename - useful when generating components, will rename the generated template to this name.
  + injects - definitions that should be inserted in other files upon rendering.
+ + paths - key value pairs string split by | ex: './my/path.ts|./my/other/path'
+
+ Note on paths. The first path is the from path the second is the to path.
+ Essentially the used to get the relative path from the to path.
 
 All other properties as seen below are custom. Again see above on front matter and yaml
 in general for how to create objects, arrays and so on.
@@ -357,7 +367,7 @@ It is also possible to inject inline within your template file. This is done by 
 
 $config:
   ext: .ts
-  component: Service
+  type: Service
   casing: title
   injects:
     - filename: 'examples/db.example.tsx'
