@@ -185,7 +185,7 @@ var Mustr = (function (_super) {
     Mustr.prototype.normalizeName = function (name) {
         if (!lodash_1.isString(name))
             return name;
-        return name.toLowerCase().replace(this.tplexp, '');
+        return name.toLowerCase().replace(this.tplexp, '').replace(/^\.?\/?/, '');
     };
     /**
      * Truncate
@@ -454,9 +454,6 @@ var Mustr = (function (_super) {
             parsedOutput_2 = path_1.parse(output);
             // Ensure ext from output or defined in template config.
             ext = staticExt || tmpConfig.ext;
-            // NOTE: don't check for ext could be desired.
-            // if (template.ext && !ext)
-            //   this.log.warn('failed to configure template using extension of undefined.');
             // Get the output name.
             outputName = template.rename ? template.rename : parsedOutput_2.name;
             // Set the component name in metadata.
@@ -672,8 +669,9 @@ var Mustr = (function (_super) {
                 _this.saveRollbacks();
             done(e, t);
         };
-        if (lodash_1.isString(name))
+        if (lodash_1.isString(name)) {
             name = this.normalizeName(name);
+        }
         // Check if is component.
         if (lodash_1.isString(name) && this.components[name]) {
             // Groups cannot have extension in output.
@@ -778,7 +776,7 @@ var Mustr = (function (_super) {
             // Ensure injects array.
             template.injects = template.injects || [];
             // Ensure mapped array.
-            template.metadata.$component.mapped = template.metadata.$component.mapped || [];
+            template.metadata.$component.paths = template.metadata.$component.paths || [];
             // Parse the output path.
             var parsedTemplateOutput_1 = path_1.parse(template.outputPath);
             var parsedOutput = path_1.parse(this.outputPath);
@@ -787,6 +785,36 @@ var Mustr = (function (_super) {
             var injects_1 = [];
             var success_1 = 0;
             var failed_1 = 0;
+            // BUILD MAPPED PATHS
+            template.paths = template.paths || [];
+            var x = template.paths.length;
+            template.paths.forEach(function (itm) {
+                itm = itm.replace(/\s+/g, '').split('|');
+                if (!itm.length)
+                    return;
+                var from = itm[0];
+                var to = itm[1];
+                // Just continue if no from and no to.
+                if (!from && !to)
+                    return;
+                // is to self.
+                var fromHasPath = (from === 'self' || lodash_1.isUndefined(from));
+                var toHasPath = (to === 'self' || lodash_1.isUndefined(to));
+                // Ensure from and to then resolve each.
+                from = fromHasPath ? template.outputPath : from;
+                to = toHasPath ? template.outputPath : to;
+                from = path_1.resolve(_this.outputPath, from);
+                to = path_1.resolve(_this.outputPath, to);
+                var parsedIns = path_1.parse(from);
+                var tmpRel = path_1.relative(parsedIns.dir, to);
+                var parsedTmpRel = path_1.parse(tmpRel);
+                tmpRel = parsedTmpRel.dir;
+                if (parsedTmpRel.name !== 'index')
+                    tmpRel = path_1.join(tmpRel, parsedTmpRel.name);
+                tmpRel = /^\.\./.test(tmpRel) ? tmpRel : './' + tmpRel;
+                template.metadata.$component.paths.push(tmpRel);
+            });
+            console.log(template.metadata.$component.paths);
             // Iterate the inject
             template.injects.forEach(function (inj) {
                 var self = _this;
@@ -817,37 +845,9 @@ var Mustr = (function (_super) {
                     injRollback.rollbackFrom = rollbackFrom;
                     fs_extra_1.copySync(resolvedInject, rollbackFrom);
                 }
-                inj.mapped = inj.mapped || [];
-                // Allow strings which assumed to be
-                // the "to" value with the from
-                // set to the current file.
-                if (lodash_1.isString(inj.mapped)) {
-                    inj.mapped = [{
-                            from: inj.mapped
-                        }];
-                }
-                var i = inj.mapped.length;
-                while (i--) {
-                    var m = inj.mapped[i];
-                    // Just continue if no from and no to.
-                    if (!m.from && !m.to)
-                        continue;
-                    // Ensure from and to then resolve each.
-                    m.from = lodash_1.isUndefined(m.from) || m.from === 'self' ? template.outputPath : m.from;
-                    m.to = lodash_1.isUndefined(m.to) || m.to === 'self' ? template.outputPath : m.to;
-                    m.from = path_1.resolve(_this.outputPath, m.from);
-                    m.to = path_1.resolve(_this.outputPath, m.to);
-                    var parsedFrom = path_1.parse(m.from);
-                    var tmpRel = path_1.relative(parsedFrom.dir, m.to);
-                    var parsedTmpRel = path_1.parse(tmpRel);
-                    tmpRel = './' + parsedTmpRel.dir;
-                    if (parsedTmpRel.name !== 'index')
-                        tmpRel += ('/' + parsedTmpRel.name);
-                    template.metadata.$component.mapped.push(tmpRel);
-                }
-                i = inj.insert.length;
-                while (i--) {
-                    inj.insert[i] = _this.renderer(inj.insert[i], template.metadata);
+                var n = inj.insert.length;
+                while (n--) {
+                    inj.insert[n] = _this.renderer(inj.insert[n], template.metadata);
                 }
                 var wrapper = function (cb) {
                     _this.inject(inj, function (err) {

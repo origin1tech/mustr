@@ -267,8 +267,9 @@ export class Mustr extends EventEmitter implements IMustr {
    * @param name the template name to normalize.
    */
   private normalizeName(name: any): any {
-    if (!_isString(name)) return name;
-    return name.toLowerCase().replace(this.tplexp, '');
+    if (!_isString(name))
+      return name;
+    return name.toLowerCase().replace(this.tplexp, '').replace(/^\.?\/?/, '');
   }
 
   /**
@@ -618,10 +619,6 @@ export class Mustr extends EventEmitter implements IMustr {
       // Ensure ext from output or defined in template config.
       ext = staticExt || tmpConfig.ext;
 
-      // NOTE: don't check for ext could be desired.
-      // if (template.ext && !ext)
-      //   this.log.warn('failed to configure template using extension of undefined.');
-
       // Get the output name.
       outputName = template.rename ? template.rename : parsedOutput.name;
 
@@ -882,8 +879,9 @@ export class Mustr extends EventEmitter implements IMustr {
 
     };
 
-    if (_isString(name))
+    if (_isString(name)) {
       name = <string>this.normalizeName(name);
+    }
 
     // Check if is component.
     if (_isString(name) && this.components[name]) {
@@ -1017,7 +1015,7 @@ export class Mustr extends EventEmitter implements IMustr {
       template.injects = template.injects || [];
 
       // Ensure mapped array.
-      template.metadata.$component.mapped = template.metadata.$component.mapped || [];
+      template.metadata.$component.paths = template.metadata.$component.paths || [];
 
       // Parse the output path.
       const parsedTemplateOutput = parse(template.outputPath as string);
@@ -1029,6 +1027,53 @@ export class Mustr extends EventEmitter implements IMustr {
       const injects = [];
       let success = 0;
       let failed = 0;
+
+      // BUILD MAPPED PATHS
+
+      template.paths = template.paths || [];
+      let x = template.paths.length;
+
+      template.paths.forEach((itm: any) => {
+
+        itm = itm.replace(/\s+/g, '').split('|');
+
+        if (!itm.length)
+          return;
+
+        let from = itm[0];
+        let to = itm[1];
+
+        // Just continue if no from and no to.
+        if (!from && !to)
+          return;
+
+        // is to self.
+        const fromHasPath = (from === 'self' || _isUndefined(from));
+        const toHasPath = (to === 'self' || _isUndefined(to));
+
+        // Ensure from and to then resolve each.
+        from = fromHasPath ? template.outputPath : from;
+        to = toHasPath ? template.outputPath : to;
+
+        from = resolve(this.outputPath, from);
+        to = resolve(this.outputPath, to);
+
+        const parsedIns = parse(from);
+        let tmpRel = relative(parsedIns.dir, to);
+
+        const parsedTmpRel = parse(tmpRel);
+        tmpRel = parsedTmpRel.dir;
+
+        if (parsedTmpRel.name !== 'index')
+          tmpRel = join(tmpRel, parsedTmpRel.name);
+
+        tmpRel = /^\.\./.test(tmpRel) ? tmpRel : './' + tmpRel;
+
+        template.metadata.$component.paths.push(tmpRel);
+
+      });
+
+      console.log(template.metadata.$component.paths);
 
       // Iterate the inject
       template.injects.forEach((inj: IInject) => {
@@ -1070,50 +1115,9 @@ export class Mustr extends EventEmitter implements IMustr {
           copySync(resolvedInject, rollbackFrom);
         }
 
-        inj.mapped = inj.mapped || [];
-
-        // Allow strings which assumed to be
-        // the "to" value with the from
-        // set to the current file.
-        if (_isString(inj.mapped)) {
-          inj.mapped = [{
-            from: inj.mapped
-          }];
-        }
-
-        let i = inj.mapped.length;
-
-        while (i--) {
-
-          const m = inj.mapped[i];
-
-          // Just continue if no from and no to.
-          if (!m.from && !m.to)
-            continue;
-
-          // Ensure from and to then resolve each.
-          m.from = _isUndefined(m.from) || m.from === 'self' ? template.outputPath : m.from;
-          m.to = _isUndefined(m.to) || m.to === 'self' ? template.outputPath : m.to;
-
-          m.from = resolve(this.outputPath, m.from);
-          m.to = resolve(this.outputPath, m.to);
-
-          const parsedFrom = parse(m.from);
-          let tmpRel = relative(parsedFrom.dir, m.to);
-
-          const parsedTmpRel = parse(tmpRel);
-          tmpRel = './' + parsedTmpRel.dir;
-
-          if (parsedTmpRel.name !== 'index')
-            tmpRel += ('/' + parsedTmpRel.name);
-
-          template.metadata.$component.mapped.push(tmpRel);
-
-        }
-
-        i = inj.insert.length;
-        while (i--) {
-          inj.insert[i] = this.renderer(inj.insert[i], template.metadata);
+        let n = inj.insert.length;
+        while (n--) {
+          inj.insert[n] = this.renderer(inj.insert[n], template.metadata);
         }
 
         const wrapper = (cb) => {

@@ -27,7 +27,7 @@ export interface IMetadataComponent {
     group?: string;
     ext?: string;
     path?: string;
-    mapped?: string[];
+    paths?: string[];
 }
 export interface IMetadata {
     $component?: IMetadataComponent;
@@ -61,6 +61,7 @@ export interface ITemplate extends IConfig {
     isPartial?: boolean;
     isStatic?: boolean;
     group?: string;
+    paths?: string[];
 }
 export interface IComponent {
     name?: string;
@@ -91,10 +92,6 @@ export interface IRegister {
     beforeRender(beforeRender: BeforeRender): IRegister;
     afterRender(afterRender: AfterRender): IRegister;
 }
-export interface IInsertMappedPath {
-    from: string;
-    to?: string;
-}
 export interface IInject {
     filename: string;
     find: string | RegExp;
@@ -102,7 +99,6 @@ export interface IInject {
     insert: string | string[];
     done: NodeCallback;
     relative?: boolean;
-    mapped?: IInsertMappedPath[] | string;
 }
 export interface IMustrOptions {
     configDir?: string;

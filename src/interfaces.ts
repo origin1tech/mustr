@@ -24,7 +24,7 @@ export interface IMetadataComponent {
   group?: string;
   ext?: string;
   path?: string;
-  mapped?: string[];
+  paths?: string[];
 }
 
 export interface IMetadata {
@@ -64,6 +64,7 @@ export interface ITemplate extends IConfig {
   isPartial?: boolean;          // indicates the template is a partial.
   isStatic?: boolean;           // when true is statically defined template.
   group?: string;               // template is part of a group being rendered.
+  paths?: string[];
 
 }
 
@@ -102,11 +103,6 @@ export interface IRegister {
   afterRender(afterRender: AfterRender): IRegister;
 }
 
-export interface IInsertMappedPath {
-  from: string;   // the from path.
-  to?: string;     // the path to the target.
-}
-
 export interface IInject {
   filename: string;
   find: string | RegExp;
@@ -114,7 +110,6 @@ export interface IInject {
   insert: string | string[];
   done: NodeCallback;
   relative?: boolean;             // when true filename relative to output path of source file.
-  mapped?: IInsertMappedPath[] | string;   // array of from to object to resovle paths.
 }
 
 export interface IMustrOptions {
