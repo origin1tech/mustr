@@ -1,7 +1,11 @@
 /// <reference types="node" />
 import { ILogger } from 'pargv';
 import { EventEmitter } from 'events';
+<<<<<<< HEAD
 import { IMustr, IMustrOptions, ITemplate, NodeCallback, IRegister, IRegisterConfig, IInject, IComponent, RenderMethod, IRollback, IRollbackContainer, IRollbackStat, IMap } from './interfaces';
+=======
+import { IMustr, IMustrOptions, ITemplate, NodeCallback, IRegister, IRegisterConfig, IInject, IComponent, RenderMethod, IRollbackContainer, IRollbackStat, IMap } from './interfaces';
+>>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 export declare class Mustr extends EventEmitter implements IMustr {
     private tplexp;
     private loaded;
@@ -88,6 +92,17 @@ export declare class Mustr extends EventEmitter implements IMustr {
      */
     private addPartials(template, ...args);
     /**
+<<<<<<< HEAD
+=======
+     * Add Rollback
+     * Adds a rollback to the collection.
+     *
+     * @param id the id of the rollback to add.
+     * @param rollback the rollback object.
+     */
+    private addRollback(id, rollback);
+    /**
+>>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
      * Get Dirs
      * Takes a base directory then retrives
      * all sub directories for that directory.
@@ -180,6 +195,7 @@ export declare class Mustr extends EventEmitter implements IMustr {
      */
     inject(filename: string | IInject, find?: string | RegExp | NodeCallback, strategy?: 'before' | 'after' | 'first' | 'last' | 'replace', insert?: string | string[], done?: NodeCallback): void;
     /**
+<<<<<<< HEAD
      * Add Rollback
      * Adds a rollback to the collection.
      *
@@ -188,6 +204,8 @@ export declare class Mustr extends EventEmitter implements IMustr {
      */
     addRollback(id: string, rollback: IRollback): IRollbackContainer;
     /**
+=======
+>>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
      * Rollback
      * Rolls back and removes generated templates.
      *

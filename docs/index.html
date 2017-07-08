@@ -72,6 +72,7 @@
 				<p>Look for exmaples and video tutorial coming this week of July 3, 2017. Although Mustr is not
 					overly complicated, appreciate perhaps a little tough to follow at first video will clear it up
 				so look for that in the next several days.</p>
+<<<<<<< HEAD
 				<p><strong>Take note also there was a mistake earlier in the readme as to inline config/metadata via cli.</strong></p>
 				<p>Initially this readme read:</p>
 				<pre><code class="lang-sh">$ mu g db shared/services/db --user name:Bob,age:25
@@ -82,6 +83,8 @@ $ mu g db shared/services/db --user.name Bob --user.age 25
 $ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
 </code></pre>
 				<p>:(  sorry about that!</p>
+=======
+>>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 				<h2 id="description">Description</h2>
 				<p>Minimalistic scaffolding tool using Mustache Templates with handy rollback feature.</p>
 				<p>Scaffolding can be a time saver and helps in consistency for teams. Yeoman is perhaps the most popular tool for this requirement. However building out your own generators can be cumbersome and time consuming. In the end the need is often no more than passing in some params then rendering those params in your template. Mustr attempts to fill that need in a simplistic and declarative way without the hassle and time investment. Once you buy in you&#39;ll find it rather trivial to flesh out templates.</p>
@@ -344,15 +347,26 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 				<p>The component name or the ending value you specified in the output path &quot;shared/services/db&quot; in this case &quot;db&quot; is used for the name of the component/template you&#39;re generating. You&#39;ll notice though that the name is auto suffixed like the file path. This results in this case in &quot;DbService&quot;.</p>
 				<p>The filename is auto cased based on your front-matter config using the property &quot;casing&quot;. Valid values are lower, upper, capitalize, title, or camel. Whether you are using suffixes or not Mustr will just figure this out when you specify your desired case. More often than not you want &quot;title&quot; which is essentially titlecase. For anything that is a component/class etc. that&#39;s likely what you want.</p>
 				<h2 id="extending-metadata-via-cli">Extending Metadata via CLI</h2>
+<<<<<<< HEAD
 				<p>Any flags passed in your command line will be respected and overwrite any config or static metadata used in rendering your template.</p>
+=======
+				<p>Any flags passed in your command line will be respected and overwrite any static metadata used in rendering your template.</p>
+>>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 				<pre><code class="lang-sh">$ mu g db shared/services/db --property value
 </code></pre>
 				<p>The above will extend or overwrite your metadata object with a key called &quot;property&quot; with the provided &quot;value&quot; as it&#39;s value.</p>
 				<p>Nested values are also possible. You could for example have an object in your metadata such as &quot;user&quot;. You override or provide it by doing something like:</p>
+<<<<<<< HEAD
 				<pre><code class="lang-sh">$ mu g db shared/services/db --metadata.user name:Bob,age:25
 </code></pre>
 				<p>OR</p>
 				<pre><code class="lang-sh">$ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
+=======
+				<pre><code class="lang-sh">$ mu g db shared/services/db --user name:Bob,age:25
+</code></pre>
+				<p>OR</p>
+				<pre><code class="lang-sh">$ mu g db shared/services/db --user.name Bob --user.age 25
+>>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 </code></pre>
 				<h2 id="injecting-imports">Injecting Imports</h2>
 				<p>Usually in the ES6 world you will want create an import of the generated/rendered template into another file. Currently this is done only via a callback in your registration as described above.</p>
