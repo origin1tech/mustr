@@ -9,7 +9,6 @@ Look for exmaples and video tutorial coming this week of July 3, 2017. Although 
 overly complicated, appreciate perhaps a little tough to follow at first video will clear it up
 so look for that in the next several days.
 
-<<<<<<< HEAD
 **Take note also there was a mistake earlier in the readme as to inline config/metadata via cli.**
 
 Initially this readme read:
@@ -27,8 +26,6 @@ $ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
 ```
 :(  sorry about that!
 
-=======
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 ## Description
 
 Minimalistic scaffolding tool using Mustache Templates with handy rollback feature.
@@ -344,11 +341,7 @@ The filename is auto cased based on your front-matter config using the property 
 
 ## Extending Metadata via CLI
 
-<<<<<<< HEAD
 Any flags passed in your command line will be respected and overwrite any config or static metadata used in rendering your template.
-=======
-Any flags passed in your command line will be respected and overwrite any static metadata used in rendering your template.
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 
 ```sh
 $ mu g db shared/services/db --property value
@@ -359,21 +352,13 @@ The above will extend or overwrite your metadata object with a key called "prope
 Nested values are also possible. You could for example have an object in your metadata such as "user". You override or provide it by doing something like:
 
 ```sh
-<<<<<<< HEAD
 $ mu g db shared/services/db --metadata.user name:Bob,age:25
-=======
-$ mu g db shared/services/db --user name:Bob,age:25
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 ```
 
 OR
 
 ```sh
-<<<<<<< HEAD
 $ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
-=======
-$ mu g db shared/services/db --user.name Bob --user.age 25
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 ```
 
 ## Injecting Imports

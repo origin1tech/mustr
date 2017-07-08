@@ -1,6 +1,6 @@
 {
   "name": "mustr",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "Barebones generator.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -10,7 +10,7 @@
     "compile": "node ./node_modules/typescript/bin/tsc -p ./src/tsconfig.json",
     "bump": "node ./build/bump",
     "build": "npm run clean && npm run copy && npm run compile",
-    "commit": "git commit -am 'auto commit'",
+    "commit": "git add . && git commit -am 'auto commit'",
     "push": "git push",
     "release": "npm run build && npm run docs && npm run bump && npm run commit && npm run push && npm publish",
     "test": "mocha",
