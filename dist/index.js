@@ -252,26 +252,6 @@ var Mustr = (function (_super) {
         }
     };
     /**
-<<<<<<< HEAD
-=======
-     * Add Rollback
-     * Adds a rollback to the collection.
-     *
-     * @param id the id of the rollback to add.
-     * @param rollback the rollback object.
-     */
-    Mustr.prototype.addRollback = function (id, rollback) {
-        if (this.options.maxRollbacks === 0)
-            return;
-        var rb = this.rollbacks[id] = this.rollbacks[id] || {};
-        if (!rb.timestamp)
-            rb.timestamp = (new Date()).toISOString();
-        rb.rollbacks = rb.rollbacks || [];
-        rb.rollbacks.push(rollback);
-        return rollback;
-    };
-    /**
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
      * Get Dirs
      * Takes a base directory then retrives
      * all sub directories for that directory.
@@ -1042,7 +1022,7 @@ var Mustr = (function (_super) {
         });
     };
     /**
-<<<<<<< HEAD
+  <<<<<<< HEAD
      * Add Rollback
      * Adds a rollback to the collection.
      *
@@ -1062,8 +1042,8 @@ var Mustr = (function (_super) {
         return rollback;
     };
     /**
-=======
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
+  =======
+  >>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
      * Rollback
      * Rolls back and removes generated templates.
      *

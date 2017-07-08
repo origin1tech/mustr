@@ -1,10 +1,6 @@
 {
   "name": "mustr",
-<<<<<<< HEAD
-  "version": "1.0.23",
-=======
-  "version": "1.0.22",
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
+  "version": "1.0.24",
   "description": "Barebones generator.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
