@@ -1,3 +1,0 @@
-./test/*.ts
---ignoreWarnings
---compilers ts:ts-node/register,tsx:ts-node/register
