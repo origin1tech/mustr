@@ -3,7 +3,9 @@
 </p>
 <br/>
 
-## Quick Note
+## Quick Note (update 7/9/2017)
+
+Finishing up see project which uses Mustr should make things very clear for those interested will be completed in a day or two!
 
 Look for exmaples and video tutorial coming this week of July 3, 2017. Although Mustr is not
 overly complicated, appreciate perhaps a little tough to follow at first video will clear it up
@@ -52,25 +54,20 @@ $ mu init
 
 The options are pretty minial and mot much to configure. There are basically three properties in your "mustr.json" file. It is not likely that you'll need to change these for most projects but in case you do...
 
-- configDir the configuration directory from root usually "./mustr".
-- outputDir the output or where your source files are usually "./src".
-- templateExt the extension used for your templates usually ".tpl".
-- autoLoad when true auto loads templates/config, only need to set to false if loading Mustr manually.
-- autoRegister auto registers found templates, manually register to override.
-- maxRollbacks the maximum number of rollbacks to store before pruning.
-
-The following properties are valid only when passing a config
-object into Mustr manually when initializing instance. These
-options cannot be set in your mustr.json file however you can
-set the engine and renderer in your register.js file by calling:
-
-- Engine the custom compiling engine to use instead of Mustache.
-- renderer the rendering function to render out the template.
-
-```js
-mu.setEngine(Compiler, renderer);
-```
-see below for an example using Jade.
+<table>
+  <caption>Mustr Option</caption>
+  <th>
+    <tr><td>Option</td><td>Description</td></tr>
+  </th>
+  <body>
+    <tr><td>configDir</td><td>the configuration directory from project root, typically "./mustr"</td></tr>
+    <tr><td>outputDir</td><td>the output or where your source files are usually "./src".</td></tr>
+    <tr><td>templateExt</td><td>the extension used for your templates usually ".tpl".</td></tr>
+    <tr><td>autoLoad</td><td>when true auto loads templates/config, only need to set to false if loading Mustr manually.</td></tr>
+    <tr><td>autoRegister</td><td>auto registers found templates, manually register to override.</td></tr>
+    <tr><td>maxRollbacks</td><td>the maximum number of rollbacks to store before pruning.</td></tr>
+  </body>
+</table>
 
 ```json
 {
@@ -81,6 +78,35 @@ see below for an example using Jade.
   "autoRegister": true,
   "maxRollbacks" 15
 }
+```
+
+The following properties are valid only when passing a config
+object into Mustr manually by way of initializing instance.
+
+<table>
+  <caption>Mustr Instance ONLY Options</caption>
+  <th>
+    <tr><td>Option</td><td>Description</td></tr>
+  </th>
+  <body>
+    <tr><td>engine</td><td>the custom compiling engine to use instead of Mustache.</td></tr>
+    <tr><td>renderer</td><td>the rendering function to render out the template.</td></tr>
+  </body>
+</table>
+
+
+These options cannot be set in your mustr.json file however they can be set in two ways as follows:
+
+**From Register.js**
+
+```js
+mu.setEngine(Compiler, renderer);
+```
+
+OR
+
+```js
+const mstr = new Mustr({ engine: SomeTemplateEngine, renderer: SomeEngineRenderMethod })
 ```
 
 ## Defining Templates

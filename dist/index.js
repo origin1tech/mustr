@@ -29,7 +29,7 @@ var defaults = {
     templateExt: '.tpl',
     autoLoad: true,
     autoRegister: true,
-    Engine: undefined,
+    engine: undefined,
     renderer: undefined,
     maxRollbacks: 15 // max rollbacks to store set to 0 to disable.
 };
@@ -48,6 +48,9 @@ var Mustr = (function (_super) {
         _this.rollbacks = {};
         _this.options = lodash_1.extend({}, defaults, options);
         _this.log = pargv_1.logger();
+        // backward compat.
+        if (_this.options['Engine'] && !_this.options.engine)
+            _this.options.engine = _this.options['Engine'];
         _this.configPath = path_1.resolve(_this.cwd, _this.options.configDir);
         _this.templatesPath = path_1.resolve(_this.cwd, path_1.join(_this.options.configDir, '/**/*.tpl')).toLowerCase();
         // Resolve the base directory.
@@ -59,7 +62,7 @@ var Mustr = (function (_super) {
         // Path to rollbacks register.
         _this.rollbacksPath = path_1.resolve(_this.cwd, path_1.join(_this.options.configDir, 'rollbacks.json'));
         _this.tplexp = new RegExp(_this.options.templateExt + '$');
-        _this.Engine = _this.options.Engine || Mustache;
+        _this.Engine = _this.options.engine || Mustache;
         _this.renderer = _this.options.renderer || Mustache.render;
         _this.load();
         return _this;
@@ -276,7 +279,7 @@ var Mustr = (function (_super) {
         // Engine and renderer can only be passed
         // when manually initializing Mustr instance.
         var _defaults = lodash_1.clone(defaults);
-        delete _defaults.Engine;
+        delete _defaults.engine;
         delete _defaults.renderer;
         // Ensure not already initialized.
         if (!force && (fs_extra_1.existsSync(configPath) || fs_extra_1.existsSync(blueprintsPath)))

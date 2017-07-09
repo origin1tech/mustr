@@ -118,7 +118,7 @@ export interface IMustrOptions {
   templateExt?: string;       // the extension for templates usually .tpl.
   autoLoad?: boolean;         // when true auto loads templates, rollbacks etc.
   autoRegister?: boolean;     // when true templates are auto registered using defaults.
-  Engine?: Object;            // optional engine for compiling/rendering templates.
+  engine?: Object;            // optional engine for compiling/rendering templates.
   renderer?: RenderMethod;    // the renderer method for rendering the template.
   maxRollbacks?: number;      // maximum number of stored rollbacks.
 }

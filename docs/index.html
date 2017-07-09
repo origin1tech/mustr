@@ -68,11 +68,11 @@
 						<a href="http://github.com/origin1tech/mustr"><img width="150" src="https://raw.githubusercontent.com/origin1tech/mustr/master/assets/logo.png"></a>
 					</p>
 				<br/></p>
-				<h2 id="quick-note">Quick Note</h2>
+				<h2 id="quick-note-update-7-9-2017-">Quick Note (update 7/9/2017)</h2>
+				<p>Finishing up see project which uses Mustr should make things very clear for those interested will be completed in a day or two!</p>
 				<p>Look for exmaples and video tutorial coming this week of July 3, 2017. Although Mustr is not
 					overly complicated, appreciate perhaps a little tough to follow at first video will clear it up
 				so look for that in the next several days.</p>
-<<<<<<< HEAD
 				<p><strong>Take note also there was a mistake earlier in the readme as to inline config/metadata via cli.</strong></p>
 				<p>Initially this readme read:</p>
 				<pre><code class="lang-sh">$ mu g db shared/services/db --user name:Bob,age:25
@@ -83,8 +83,6 @@ $ mu g db shared/services/db --user.name Bob --user.age 25
 $ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
 </code></pre>
 				<p>:(  sorry about that!</p>
-=======
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 				<h2 id="description">Description</h2>
 				<p>Minimalistic scaffolding tool using Mustache Templates with handy rollback feature.</p>
 				<p>Scaffolding can be a time saver and helps in consistency for teams. Yeoman is perhaps the most popular tool for this requirement. However building out your own generators can be cumbersome and time consuming. In the end the need is often no more than passing in some params then rendering those params in your template. Mustr attempts to fill that need in a simplistic and declarative way without the hassle and time investment. Once you buy in you&#39;ll find it rather trivial to flesh out templates.</p>
@@ -98,25 +96,20 @@ $ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
 </code></pre>
 				<h2 id="options">Options</h2>
 				<p>The options are pretty minial and mot much to configure. There are basically three properties in your &quot;mustr.json&quot; file. It is not likely that you&#39;ll need to change these for most projects but in case you do...</p>
-				<ul>
-					<li>configDir the configuration directory from root usually &quot;./mustr&quot;.</li>
-					<li>outputDir the output or where your source files are usually &quot;./src&quot;.</li>
-					<li>templateExt the extension used for your templates usually &quot;.tpl&quot;.</li>
-					<li>autoLoad when true auto loads templates/config, only need to set to false if loading Mustr manually.</li>
-					<li>autoRegister auto registers found templates, manually register to override.</li>
-					<li>maxRollbacks the maximum number of rollbacks to store before pruning.</li>
-				</ul>
-				<p>The following properties are valid only when passing a config
-					object into Mustr manually when initializing instance. These
-					options cannot be set in your mustr.json file however you can
-				set the engine and renderer in your register.js file by calling:</p>
-				<ul>
-					<li>Engine the custom compiling engine to use instead of Mustache.</li>
-					<li>renderer the rendering function to render out the template.</li>
-				</ul>
-				<pre><code class="lang-js">mu.setEngine(Compiler, renderer);
-</code></pre>
-				<p>see below for an example using Jade.</p>
+				<table>
+					<caption>Mustr Option</caption>
+					<th>
+						<tr><td>Option</td><td>Description</td></tr>
+					</th>
+					<body>
+						<tr><td>configDir</td><td>the configuration directory from project root, typically &quot;./mustr&quot;</td></tr>
+						<tr><td>outputDir</td><td>the output or where your source files are usually &quot;./src&quot;.</td></tr>
+						<tr><td>templateExt</td><td>the extension used for your templates usually &quot;.tpl&quot;.</td></tr>
+						<tr><td>autoLoad</td><td>when true auto loads templates/config, only need to set to false if loading Mustr manually.</td></tr>
+						<tr><td>autoRegister</td><td>auto registers found templates, manually register to override.</td></tr>
+						<tr><td>maxRollbacks</td><td>the maximum number of rollbacks to store before pruning.</td></tr>
+					</body>
+				</table>
 				<pre><code class="lang-json">{
   &quot;configDir&quot;: &quot;./mustr&quot;,
   &quot;outputDir&quot;: &quot;./src&quot;,
@@ -125,6 +118,25 @@ $ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
   &quot;autoRegister&quot;: true,
   &quot;maxRollbacks&quot; 15
 }
+</code></pre>
+				<p>The following properties are valid only when passing a config
+				object into Mustr manually by way of initializing instance.</p>
+				<table>
+					<caption>Mustr Instance ONLY Options</caption>
+					<th>
+						<tr><td>Option</td><td>Description</td></tr>
+					</th>
+					<body>
+						<tr><td>engine</td><td>the custom compiling engine to use instead of Mustache.</td></tr>
+						<tr><td>renderer</td><td>the rendering function to render out the template.</td></tr>
+					</body>
+				</table>
+				<p>These options cannot be set in your mustr.json file however they can be set in two ways as follows:</p>
+				<p><strong>From Register.js</strong></p>
+				<pre><code class="lang-js">mu.setEngine(Compiler, renderer);
+</code></pre>
+				<p>OR</p>
+				<pre><code class="lang-js"><span class="hljs-keyword">const</span> mstr = <span class="hljs-keyword">new</span> Mustr({ <span class="hljs-attr">engine</span>: SomeTemplateEngine, <span class="hljs-attr">renderer</span>: SomeEngineRenderMethod })
 </code></pre>
 				<h2 id="defining-templates">Defining Templates</h2>
 				<p>Templates are defined using the Mustache templating that you likely already know and yaml front-matter similar to Jekyll or Hugo if you&#39;ve used either before. The front matter allows for defining a configuration for the template but can be used as you&#39;d expect as the metadata for your template also. At first this may seem a bit redundant however it is needed for the config and also allows for defaults for your template. You&#39;ll be able to further modify the metadata for the template as you&#39;ll see in a min below.</p>
@@ -347,26 +359,15 @@ export class </span><span class="hljs-template-variable">{{$component.fullname}}
 				<p>The component name or the ending value you specified in the output path &quot;shared/services/db&quot; in this case &quot;db&quot; is used for the name of the component/template you&#39;re generating. You&#39;ll notice though that the name is auto suffixed like the file path. This results in this case in &quot;DbService&quot;.</p>
 				<p>The filename is auto cased based on your front-matter config using the property &quot;casing&quot;. Valid values are lower, upper, capitalize, title, or camel. Whether you are using suffixes or not Mustr will just figure this out when you specify your desired case. More often than not you want &quot;title&quot; which is essentially titlecase. For anything that is a component/class etc. that&#39;s likely what you want.</p>
 				<h2 id="extending-metadata-via-cli">Extending Metadata via CLI</h2>
-<<<<<<< HEAD
 				<p>Any flags passed in your command line will be respected and overwrite any config or static metadata used in rendering your template.</p>
-=======
-				<p>Any flags passed in your command line will be respected and overwrite any static metadata used in rendering your template.</p>
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 				<pre><code class="lang-sh">$ mu g db shared/services/db --property value
 </code></pre>
 				<p>The above will extend or overwrite your metadata object with a key called &quot;property&quot; with the provided &quot;value&quot; as it&#39;s value.</p>
 				<p>Nested values are also possible. You could for example have an object in your metadata such as &quot;user&quot;. You override or provide it by doing something like:</p>
-<<<<<<< HEAD
 				<pre><code class="lang-sh">$ mu g db shared/services/db --metadata.user name:Bob,age:25
 </code></pre>
 				<p>OR</p>
 				<pre><code class="lang-sh">$ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
-=======
-				<pre><code class="lang-sh">$ mu g db shared/services/db --user name:Bob,age:25
-</code></pre>
-				<p>OR</p>
-				<pre><code class="lang-sh">$ mu g db shared/services/db --user.name Bob --user.age 25
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
 </code></pre>
 				<h2 id="injecting-imports">Injecting Imports</h2>
 				<p>Usually in the ES6 world you will want create an import of the generated/rendered template into another file. Currently this is done only via a callback in your registration as described above.</p>

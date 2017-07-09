@@ -40,7 +40,7 @@ const defaults: IMustrOptions = {
   templateExt: '.tpl',              // the extension name for templates.
   autoLoad: true,                   // auto loads conf, set to false for manual ctrl.
   autoRegister: true,               // whether templates in config dir should auto reg.
-  Engine: undefined,                // optional Compiler Engine (default: Mustache).
+  engine: undefined,                // optional Compiler Engine (default: Mustache).
   renderer: undefined,              // optional Compiler renderer method.
   maxRollbacks: 15                  // max rollbacks to store set to 0 to disable.
 };
@@ -87,6 +87,10 @@ export class Mustr extends EventEmitter implements IMustr {
 
     this.log = logger();
 
+    // backward compat.
+    if (this.options['Engine'] && !this.options.engine)
+      this.options.engine = this.options['Engine'];
+
     this.configPath = resolve(this.cwd, this.options.configDir);
 
     this.templatesPath = resolve(this.cwd, join(this.options.configDir, '/**/*.tpl')).toLowerCase();
@@ -105,7 +109,7 @@ export class Mustr extends EventEmitter implements IMustr {
 
     this.tplexp = new RegExp(this.options.templateExt + '$');
 
-    this.Engine = this.options.Engine || Mustache;
+    this.Engine = this.options.engine || Mustache;
 
     this.renderer = this.options.renderer || Mustache.render;
 
@@ -382,7 +386,7 @@ export class Mustr extends EventEmitter implements IMustr {
     // Engine and renderer can only be passed
     // when manually initializing Mustr instance.
     const _defaults = _clone(defaults);
-    delete _defaults.Engine;
+    delete _defaults.engine;
     delete _defaults.renderer;
 
     // Ensure not already initialized.

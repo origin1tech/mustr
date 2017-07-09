@@ -106,7 +106,7 @@ export interface IMustrOptions {
     templateExt?: string;
     autoLoad?: boolean;
     autoRegister?: boolean;
-    Engine?: Object;
+    engine?: Object;
     renderer?: RenderMethod;
     maxRollbacks?: number;
 }
