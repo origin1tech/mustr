@@ -68,9 +68,14 @@
 						<a href="http://github.com/origin1tech/mustr"><img width="150" src="https://raw.githubusercontent.com/origin1tech/mustr/master/assets/logo.png"></a>
 					</p>
 				<br/></p>
-				<h2 id="quick-note-update-7-9-2017-">Quick Note (update 7/9/2017)</h2>
-				<p>Finishing up see project which uses Mustr should make things very clear for those interested will be completed in a day or two!</p>
-				<p>Look for exmaples and video tutorial coming this week of July 3, 2017. Although Mustr is not
+				<h2 id="status-update-7-11-2017-">Status Update (7/11/2017)</h2>
+				<p>The injected <strong>$component</strong> object has changed a little I&#39;ll update this readme soon just can&#39;t for the moment. I encourage you to inspect the object. In the meantime take a look at <strong>&quot;/dist/examples/component&quot;</strong> you can probably get a good idea from that on handling paths that can be injected to make it easier to refernce generated templates. Those examples are part of a more in depth seed project that I&#39;ll be posting in the coming days (today is 7/11/2017) very close on that.</p>
+				<p>Take key note of the &quot;paths&quot; property in the config of <strong>&quot;/dist/examples/component/view.tpl&quot;</strong>. The basic syntax is the from path to the destination path separated by a pipe. You can use the special key word <strong>&quot;self&quot;</strong> which tells Mustr to use the generated file&#39;s path itself as the relative from path.</p>
+				<p>You&#39;ll note this path is then used in the <strong>&quot;injects&quot;</strong>. Essentially the generated path is then access by it&#39;s index within the <strong>&quot;paths&quot;</strong> property which is an array.</p>
+				<p>I get this a bit to wrap your head around working on examples as quickly as possible. Again video and more advanced seed project coming very soon!!</p>
+				<h2 id="status-update-update-7-9-2017-">Status Update (update 7/9/2017)</h2>
+				<p>Finishing up seed project which uses Mustr should make things very clear for those interested will be completed in a day or two!</p>
+				<p>Look for exmaples and video tutorial coming this week of July 10, 2017. Although Mustr is not
 					overly complicated, appreciate perhaps a little tough to follow at first video will clear it up
 				so look for that in the next several days.</p>
 				<p><strong>Take note also there was a mistake earlier in the readme as to inline config/metadata via cli.</strong></p>

@@ -3,11 +3,21 @@
 </p>
 <br/>
 
-## Quick Note (update 7/9/2017)
+## Status Update (7/11/2017)
 
-Finishing up see project which uses Mustr should make things very clear for those interested will be completed in a day or two!
+The injected **$component** object has changed a little I'll update this readme soon just can't for the moment. I encourage you to inspect the object. In the meantime take a look at **"/dist/examples/component"** you can probably get a good idea from that on handling paths that can be injected to make it easier to refernce generated templates. Those examples are part of a more in depth seed project that I'll be posting in the coming days (today is 7/11/2017) very close on that.
 
-Look for exmaples and video tutorial coming this week of July 3, 2017. Although Mustr is not
+Take key note of the "paths" property in the config of **"/dist/examples/component/view.tpl"**. The basic syntax is the from path to the destination path separated by a pipe. You can use the special key word **"self"** which tells Mustr to use the generated file's path itself as the relative from path.
+
+You'll note this path is then used in the **"injects"**. Essentially the generated path is then access by it's index within the **"paths"** property which is an array.
+
+I get this a bit to wrap your head around working on examples as quickly as possible. Again video and more advanced seed project coming very soon!!
+
+## Status Update (update 7/9/2017)
+
+Finishing up seed project which uses Mustr should make things very clear for those interested will be completed in a day or two!
+
+Look for exmaples and video tutorial coming this week of July 10, 2017. Although Mustr is not
 overly complicated, appreciate perhaps a little tough to follow at first video will clear it up
 so look for that in the next several days.
 
@@ -27,6 +37,8 @@ $ mu g db shared/services/db --metadata.user name:Bob,age:25
 $ mu g db shared/services/db --metadata.user.name Bob --metadata.user.age 25
 ```
 :(  sorry about that!
+
+
 
 ## Description
 
