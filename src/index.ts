@@ -2,7 +2,8 @@
 import { readFile, readFileSync, writeFileSync, writeFile, existsSync, copySync, ensureDirSync, createReadStream, removeSync, readdirSync, statSync } from 'fs-extra';
 import * as readline from 'readline';
 import { join, resolve, parse, ParsedPath, relative, sep } from 'path';
-import { logger, ILogger, Chalk } from 'pargv';
+import { Timbr } from 'timbr';
+import { Colurs, IColurs } from 'colurs';
 import { EOL } from 'os';
 import * as glob from 'glob';
 import * as di from 'detect-indent';
@@ -30,9 +31,7 @@ import {
 import { EventEmitter } from 'events';
 import * as fm from 'front-matter';
 import * as Mustache from 'mustache';
-import { IMustr, IMustrOptions, ITemplate, BeforeRender, IMetadata, InjectCallback, NodeCallback, AfterRender, IRegister, IRegisterConfig, IInject, IComponent, IConfig, RenderMethod, IRollback, IRollbackContainer, IRollbackStat, IMap } from './interfaces';
-
-const chalk = new Chalk();
+import { IMustr, IMustrOptions, ITemplate, BeforeRender, IMetadata, InjectCallback, NodeCallback, AfterRender, IRegister, IRegisterConfig, IInject, IComponent, IConfig, RenderMethod, IRollback, IRollbackContainer, IRollbackStat, IMap, IMustrRollbacks } from './interfaces';
 
 const defaults: IMustrOptions = {
   configDir: './mustr',             // when your config directory exists.
@@ -59,22 +58,23 @@ export class Mustr extends EventEmitter implements IMustr {
 
   // Utils
   cwd: string = process.cwd().toLowerCase();
-  log: ILogger;
+  log: Timbr;
+  colurs: IColurs;
 
   // Paths
-  configPath: string;
-  registerPath: string;
-  templatesPath: string;
-  outputPath: string;
-  rollbacksPath: string;
+  _configPath: string;
+  _registerPath: string;
+  _templatesPath: string;
+  _outputPath: string;
+  _rollbacksPath: string;
 
   // Array of template paths.
-  templatesGlob: string[];
+  _templatesGlob: string[];
 
   // Parsed templates.
-  templates: IMap<ITemplate> = {};
-  components: IMap<IComponent> = {};
-  rollbacks: IMap<IRollbackContainer> = {};
+  _templates: IMap<ITemplate> = {};
+  _components: IMap<IComponent> = {};
+  _rollbacks: IMap<IRollbackContainer> = {};
 
   // Options
   options: IMustrOptions;
@@ -85,27 +85,32 @@ export class Mustr extends EventEmitter implements IMustr {
 
     this.options = _extend({}, defaults, options);
 
-    this.log = logger();
+    this.log = new Timbr({
+      styles: {
+        error: 'red'
+      }
+    });
+    this.colurs = new Colurs();
 
     // backward compat.
     if (this.options['Engine'] && !this.options.engine)
       this.options.engine = this.options['Engine'];
 
-    this.configPath = resolve(this.cwd, this.options.configDir);
+    this._configPath = resolve(this.options.configDir);
 
-    this.templatesPath = resolve(this.cwd, join(this.options.configDir, '/**/*.tpl')).toLowerCase();
+    this._templatesPath = resolve(join(this.options.configDir, '/**/*.tpl')).toLowerCase();
 
     // Resolve the base directory.
-    this.outputPath = resolve(this.cwd, this.options.outputDir).toLowerCase();
+    this._outputPath = resolve(this.options.outputDir).toLowerCase();
 
     // Resolve the config path.
-    this.registerPath = resolve(this.cwd, this.options.configDir, 'register.js').toLowerCase();
+    this._registerPath = resolve(this.options.configDir, 'register.js').toLowerCase();
 
     // Normalized the template extension.
     this.options.templateExt = this.normalizedExt(this.options.templateExt);
 
     // Path to rollbacks register.
-    this.rollbacksPath = resolve(this.cwd, join(this.options.configDir, 'rollbacks.json'));
+    this._rollbacksPath = resolve(join(this.options.configDir, 'rollbacks.json'));
 
     this.tplexp = new RegExp(this.options.templateExt + '$');
 
@@ -116,6 +121,8 @@ export class Mustr extends EventEmitter implements IMustr {
     this.load();
 
   }
+
+  // Private Utils //
 
   /**
    * Has Matter
@@ -182,7 +189,7 @@ export class Mustr extends EventEmitter implements IMustr {
     if (EXT_EXP.test(template)) {
 
       // Static paths should resolve from working directory.
-      template = resolve(this.cwd, template);
+      template = resolve(template);
 
       // If template doesn't exist error & exit.
       if (!existsSync(template))
@@ -197,7 +204,7 @@ export class Mustr extends EventEmitter implements IMustr {
     // lookup from loaded template paths and read.
     else if (!this.hasMatter(template) && !this.hasTemplate(template)) {
 
-      const filtered = this.templatesGlob.filter((t) => {
+      const filtered = this._templatesGlob.filter((t) => {
         return parse(t).name === template;
       })[0];
 
@@ -295,7 +302,7 @@ export class Mustr extends EventEmitter implements IMustr {
   private getPartial(partial: any): ITemplate {
 
     const partialName = partial.toLowerCase();
-    const existing = this.templates[partialName];
+    const existing = this._templates[partialName];
 
     if (existing) return existing;
 
@@ -372,6 +379,269 @@ export class Mustr extends EventEmitter implements IMustr {
       .filter(f => statSync(join(dir, f)).isDirectory());
   }
 
+  // Private Rollbacks //
+
+  /**
+   * Add Rollback
+   * Adds a rollback to the collection.
+   *
+   * @param id the id of the rollback to add.
+   * @param rollback the rollback object.
+   */
+  private addRollback(id: string, rollback: IRollback): IRollbackContainer {
+
+    if (this.options.maxRollbacks === 0)
+      return;
+
+    // Ensure id doesn't contain dots.
+    id = id.replace(/\./g, '-');
+
+    const rb = this._rollbacks[id] = this._rollbacks[id] || {};
+
+    if (!rb.timestamp)
+      rb.timestamp = (new Date()).toISOString();
+    rb.rollbacks = rb.rollbacks || [];
+
+    rb.rollbacks.push(rollback);
+
+    return rollback;
+
+  }
+
+  /**
+   * Remove Rollbacks
+   * Removes previous rollbacks before Date
+   * by Date string a count of rollbacks to
+   * be removed or by rollbackId. When a number
+   * is provided the first of number provided
+   * will be removed. The last rollback is
+   * always preserved.
+   *
+   * @param by the date string or number of rollbacks to remove.
+   * @param save when false changes are not saved to file.
+   */
+  private removeRollbacks(by: string | number | Date, save?: boolean): IMustr {
+
+    let date: Date;
+    let count: any = 0;
+    let rollbackId;
+
+    // Internal helper removes by key
+    // checks if rollbacks folder exists
+    // if yes unlinks/deletes it.
+    const removeByKey = (key) => {
+
+      // Delete from collection.
+      delete this._rollbacks[key];
+
+      // If folder exists remove rollbacks folder.
+      const rollbackPath = join(this.options.configDir, this.rollbacksDir, key);
+
+      // If path exists remove.
+      if (existsSync(rollbackPath))
+        removeSync(rollbackPath);
+
+      // Check if should save rollback changes.
+      if (save !== false)
+        this.saveRollbacks();
+
+    };
+
+    // Check if is rollback id or
+    // string to be converted to date.
+    if (_isString(by)) {
+      if (this.rollbackIdExp.test(by))
+        rollbackId = by;
+      else
+        date = new Date(by);
+    }
+
+    else if (_isNumber(by))
+      count = by;
+
+    else if (by instanceof Date)
+      date = by;
+
+    else
+      this.log.error(`unsupported typeof ${typeof by} detected.`);
+
+    const keys = _keys(this._rollbacks).sort();
+
+    // Ensure count is no more than one
+    // less than the lenght of keys.
+    if (count >= keys.length)
+      count = keys.length - 1;
+
+    // Delete by id.
+    if (rollbackId) {
+      removeByKey(rollbackId);
+    }
+
+    // Delete by count.
+    else if (count > 0) {
+
+      let ctr = 0;
+
+      while (ctr < count) {
+        const key = keys[ctr];
+        removeByKey(key);
+        ctr++;
+      }
+
+    }
+
+    else if (date) {
+
+      const filterDate = date.getTime();
+
+      keys.forEach((k, i) => {
+
+        if ((i + 1) >= keys.length)
+          return;
+
+        let ts: any = Number(k.split('-')[0]);
+
+        if (ts < filterDate) {
+          removeByKey(k);
+        }
+
+      });
+
+    }
+
+    else {
+      this.log.warn(`0 rollbacks removed, unsupported type ${typeof by} or no unmatched criteria.`);
+    }
+
+    return this;
+
+  }
+
+  /**
+   * Reindex Rollbacks
+   * Iterates rollbacks.json re-sorts order
+   * optionally prunes records where rollback
+   * files are missing.
+   *
+   * @param prune when true prunes entries where missing required rollback folder/files.
+   */
+  private reindexRollbacks(prune?: boolean): IMustr {
+
+    const keys = _keys(this._rollbacks).sort();
+    const dirs = this.getDirs(resolve(this.options.configDir, this.rollbacksDir));
+    const tmp: IMap<IRollbackContainer> = {};
+
+
+    // If directories ensure matching
+    // keys in rollbacks.json.
+    if (prune !== false) {
+
+      dirs.forEach((d) => {
+
+        // If key doesn't exist remove dir.
+        if (keys.indexOf(d) === -1)
+          removeSync(resolve(this.options.configDir, this.rollbacksDir, d));
+
+      });
+
+    }
+
+    // Iterate keys and ensure rollbacks
+    // contain value paths etc.
+    keys.forEach((k) => {
+
+      let rb = this._rollbacks[k];
+      let i = rb.rollbacks.length;
+
+      // Check if should prune.
+      if (prune !== false) {
+
+        while (i--) {
+          const r = rb.rollbacks[i];
+          if (r.rollbackFrom && !existsSync(r.rollbackFrom))
+            delete rb.rollbacks[i];
+        }
+
+        // If we still have rollbacks then add
+        // to the temp object.
+        if (rb.rollbacks && rb.rollbacks.length)
+          tmp[k] = rb;
+
+      }
+
+      // Otherwise just add to
+      // temp object.
+      else {
+        tmp[k] = rb;
+      }
+
+    });
+
+    // Update to reindex object.
+    this._rollbacks = tmp;
+
+    return this;
+
+  }
+
+  /**
+   * Load Rollbacks
+   * Loads the rollbacks config file.
+   */
+  private loadRollbacks(reindex?: boolean): IMustr {
+    this._rollbacks = this.tryRequire(this._rollbacksPath);
+    if (reindex)
+      this.reindexRollbacks();
+    return this;
+  }
+
+  /**
+   * Show Rollbacks
+   * Shows details/stats for recoreded rollbacks.
+   *
+   * @param display when false will NOT display stats in console.
+   */
+  private getRollbacks(): IMap<IRollbackStat> {
+    const obj = this._rollbacks;
+    const result: { [key: string]: IRollbackStat } = {};
+    const keys = Object.keys(this._rollbacks).sort();
+    let i = keys.length;
+    while (i--) {
+      const id = keys[i];
+      const rb: IRollbackContainer = this._rollbacks[id];
+      const tmp: IRollbackStat = {};
+      tmp.id = id;
+      tmp.timestamp = rb.timestamp;
+      tmp.count = rb.rollbacks.length;
+      tmp.templates = rb.rollbacks.map(r => r.template);
+      result[id] = tmp;
+    }
+    return result;
+  }
+
+  /**
+   * Save Rollbacks
+   * Writes current rollbacks to file.
+   *
+   * @param prune when false prevents pruning rollbacks before save.
+   */
+  private saveRollbacks(prune?: boolean): IMustr {
+
+    const keys = _keys(this._rollbacks).sort();
+    let removeCount = this.options.maxRollbacks === 0 ? 0 : keys.length - this.options.maxRollbacks;
+
+    // Check if should prune previous
+    // rollbacks.
+    if (removeCount > 0 && prune !== false)
+      return this.removeRollbacks(removeCount);
+
+    writeFileSync(this._rollbacksPath, JSON.stringify(this._rollbacks, null, 2));
+
+    return this;
+
+  }
+
+
   /**
    * Init
    * Initializes Mustr for current project
@@ -380,8 +650,8 @@ export class Mustr extends EventEmitter implements IMustr {
    */
   init(force?: boolean): void {
 
-    const configPath = resolve(this.cwd, 'mustr.json');
-    const blueprintsPath = resolve(this.cwd, 'mustr');
+    const configPath = resolve('mustr.json');
+    const blueprintsPath = resolve('mustr');
 
     // Engine and renderer can only be passed
     // when manually initializing Mustr instance.
@@ -412,16 +682,20 @@ export class Mustr extends EventEmitter implements IMustr {
     if (this.loaded)
       return this;
 
-    if (!existsSync(this.registerPath)) {
-      this.log.warn(`failed to resolve register configuration at ${this.registerPath}, need to run "mu init"?`);
+    const resolvedPath = relative(this.cwd, this._registerPath);
+
+    if (!existsSync(this._registerPath)) {
+      if (!existsSync(this._configPath)) // probably initializing.
+        return this;
+      this.log.warn(`unable to resolve register at ${resolvedPath}, if init you can ignore this.`);
       return this;
     }
 
     // Load template paths..
-    this.templatesGlob = glob.sync(this.templatesPath);
+    this._templatesGlob = glob.sync(this._templatesPath);
 
     // Require the config
-    const config = this.tryRequire(this.registerPath);
+    const config = this.tryRequire(this._registerPath);
 
     if (this.options.maxRollbacks > 0)
       this.loadRollbacks();
@@ -434,7 +708,7 @@ export class Mustr extends EventEmitter implements IMustr {
     // Auto Register if set
     // call before config.
     if (this.options.autoRegister) {
-      this.templatesGlob.forEach((k) => {
+      this._templatesGlob.forEach((k) => {
         const parsed = parse(k);
         this.register(parsed.name);
       });
@@ -498,7 +772,7 @@ export class Mustr extends EventEmitter implements IMustr {
     delete options.metadata;
     let optsConfig = options;
 
-    let template: ITemplate = this.templates[name];
+    let template: ITemplate = this._templates[name];
 
     // Ensure the template exists.
     if (!template)
@@ -560,7 +834,7 @@ export class Mustr extends EventEmitter implements IMustr {
     // be relative to the output dir specified
     // or current working directory.
     // otherwise relative to output path.
-    template.outputDir = template.outputPath ? template.outputDir || this.cwd : template.outputDir || this.outputPath;
+    template.outputDir = template.outputPath ? template.outputDir || this.cwd : template.outputDir || this._outputPath;
 
     template.metadata.$component = {};
 
@@ -706,12 +980,12 @@ export class Mustr extends EventEmitter implements IMustr {
     beforeRender = parsed.beforeRender;
     afterRender = parsed.afterRender;
 
-    if (this.components[name as string]) {
+    if (this._components[name as string]) {
       this.log.warn(`sorry about that we can\'t use ${name} it\'s already used as a component name.`);
       return;
     }
 
-    _template = this.templates[<string>name] = parsed;
+    _template = this._templates[<string>name] = parsed;
 
     beforeRender = (before: BeforeRender) => {
       _template.beforeRender = before;
@@ -781,16 +1055,16 @@ export class Mustr extends EventEmitter implements IMustr {
     // element may have all the template names.
     templates = _flatten(templates);
 
-    if (this.templates[name as string]) {
+    if (this._templates[name as string]) {
       this.log.warn(`sorry about that we can\'t use ${name} it\'s already used as a template name.`);
       return this;
     }
 
     // Ensure templates exist.
     templates = templates.filter((t) => {
-      if (!this.templates[t])
+      if (!this._templates[t])
         this.log.warn(`the template ${t} has been excluded from component ${name}, the template could not be found.`);
-      return this.templates[t];
+      return this._templates[t];
     });
 
     if (!templates || !templates.length) {
@@ -798,7 +1072,7 @@ export class Mustr extends EventEmitter implements IMustr {
       return this;
     }
 
-    this.components[name] = {
+    this._components[name] = {
       name: name,
       templates: templates
     };
@@ -829,7 +1103,13 @@ export class Mustr extends EventEmitter implements IMustr {
    * @param done Node style callback with err and rendered template.
    * @param group private variable used only internally.
    */
-  render(name: string | ITemplate, output?: string | IRegisterConfig | NodeCallback | boolean, options?: IRegisterConfig | NodeCallback | boolean, force?: boolean | NodeCallback, done?: NodeCallback, group?: any) {
+  render(
+    name: string | ITemplate,
+    output?: string | IRegisterConfig | NodeCallback | boolean,
+    options?: IRegisterConfig | NodeCallback | boolean,
+    force?: boolean | NodeCallback,
+    done?: NodeCallback,
+    group?: any) {
 
     let template = <ITemplate>name;
     let isTemplate, rollbackId, rollbackDir;
@@ -864,7 +1144,7 @@ export class Mustr extends EventEmitter implements IMustr {
     }
 
     // Check if is component.
-    if (_isString(name) && this.components[name]) {
+    if (_isString(name) && this._components[name]) {
 
       // Groups cannot have extension in output.
       if (_isString(output) && /\.[a-zA-Z0-9]{2,5}$/.test(output))
@@ -874,7 +1154,7 @@ export class Mustr extends EventEmitter implements IMustr {
       //   return this.log.error('configuration object supported only as third arguemnt for components, use <name> [output] [RegisterConfig].');
 
       // If a component iterate each template and output.
-      const component = this.components[<string>name];
+      const component = this._components[<string>name];
       let ctr = 0;
       let i = component.templates.length;
       const groupId = Date.now() + '-' + name;
@@ -907,7 +1187,7 @@ export class Mustr extends EventEmitter implements IMustr {
     else {
 
       // Ensure we have some templates loaded.
-      if (!Object.keys(this.templates).length)
+      if (!Object.keys(this._templates).length)
         return this.log.warn('whoops you no templates registed, add some templates in "register.js"');
 
       if (_isFunction(output)) {
@@ -999,7 +1279,7 @@ export class Mustr extends EventEmitter implements IMustr {
 
       // Parse the output path.
       const parsedTemplateOutput = parse(template.outputPath as string);
-      const parsedOutput = parse(this.outputPath);
+      const parsedOutput = parse(this._outputPath);
 
       // Ensure the directory structure exists.
       ensureDirSync(parsedTemplateOutput.dir);
@@ -1035,8 +1315,8 @@ export class Mustr extends EventEmitter implements IMustr {
         from = fromHasPath ? template.outputPath : from;
         to = toHasPath ? template.outputPath : to;
 
-        from = resolve(this.outputPath, from);
-        to = resolve(this.outputPath, to);
+        from = resolve(this._outputPath, from);
+        to = resolve(this._outputPath, to);
 
         const parsedIns = parse(from);
         let tmpRel = relative(parsedIns.dir, to);
@@ -1070,13 +1350,13 @@ export class Mustr extends EventEmitter implements IMustr {
           inj.relative = false;
         }
 
-        let resolvedInject = resolve(this.outputPath, inj.filename);
+        let resolvedInject = resolve(this._outputPath, inj.filename);
 
         // Check if inject filename is relative to
         // the output path being generated.
         if (inj.relative) {
           resolvedInject = resolve(parsedTemplateOutput.dir, inj.filename);
-          inj.filename = relative(this.outputPath, resolvedInject);
+          inj.filename = relative(this._outputPath, resolvedInject);
         }
 
         // Store the rollback to filename.
@@ -1270,10 +1550,10 @@ export class Mustr extends EventEmitter implements IMustr {
     }
 
     // Resolve the filename.
-    filename = resolve(this.outputPath, filename);
+    filename = resolve(this._outputPath, filename);
 
     if (!existsSync(filename as string))
-      return done(new Error(`failed to inject in ${relative(this.outputPath, filename)}, file not found.`));
+      return done(new Error(`failed to inject in ${relative(this._outputPath, filename)}, file not found.`));
 
     exp = find as RegExp;
 
@@ -1381,37 +1661,9 @@ export class Mustr extends EventEmitter implements IMustr {
 
   }
 
-  /**
-<<<<<<< HEAD
-   * Add Rollback
-   * Adds a rollback to the collection.
-   *
-   * @param id the id of the rollback to add.
-   * @param rollback the rollback object.
-   */
-  addRollback(id: string, rollback: IRollback): IRollbackContainer {
-
-    if (this.options.maxRollbacks === 0)
-      return;
-
-    // Ensure id doesn't contain dots.
-    id = id.replace(/\./g, '-');
-
-    const rb = this.rollbacks[id] = this.rollbacks[id] || {};
-
-    if (!rb.timestamp)
-      rb.timestamp = (new Date()).toISOString();
-    rb.rollbacks = rb.rollbacks || [];
-
-    rb.rollbacks.push(rollback);
-
-    return rollback;
-
-  }
+  // Rollbacks //
 
   /**
-=======
->>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
    * Rollback
    * Rolls back and removes generated templates.
    *
@@ -1431,8 +1683,16 @@ export class Mustr extends EventEmitter implements IMustr {
     let isRollbackId = this.rollbackIdExp.test(name);
 
     // Check if no id, if true get last.
-    if (_isUndefined(name)) {
-      name = _keys(this.rollbacks).sort().pop();
+    if (_isUndefined(name) || name === null) {
+      const rollKeys = _keys(this._rollbacks);
+      if (!rollKeys.length) {
+        this.log
+          .write()
+          .warn('attempted to rollback but none were found.')
+          .write();
+        return;
+      }
+      name = rollKeys.sort().pop();
       isRollbackId = true;
     }
 
@@ -1467,7 +1727,7 @@ export class Mustr extends EventEmitter implements IMustr {
       isGroup = true;
 
       // Get the rollback.
-      const rb: IRollbackContainer = this.rollbacks[name];
+      const rb: IRollbackContainer = this._rollbacks[name];
 
       if (!rb) {
         this.log.error('cannot rollback using rollback instance of undefined.');
@@ -1477,10 +1737,10 @@ export class Mustr extends EventEmitter implements IMustr {
       let i = rb.rollbacks.length;
       while (i--) {
         const rollback = rb.rollbacks[i];
-        const to = resolve(this.cwd, rollback.rollbackTo);
+        const to = resolve(rollback.rollbackTo);
         // If from copy from backed up file.
         if (rollback.rollbackFrom) {
-          const from = resolve(this.cwd, rollback.rollbackFrom);
+          const from = resolve(rollback.rollbackFrom);
           try {
             copySync(from, to);
             success++;
@@ -1511,8 +1771,8 @@ export class Mustr extends EventEmitter implements IMustr {
       name = name.toLowerCase().replace(this.tplexp, '');
 
       // Check if name is a component of templates.
-      if (this.components[name]) {
-        const comps = this.components[name];
+      if (this._components[name]) {
+        const comps = this._components[name];
         isGroup = true;
         let i = comps.templates.length;
         while (i--) {
@@ -1550,238 +1810,21 @@ export class Mustr extends EventEmitter implements IMustr {
 
   }
 
-  /**
-   * Remove Rollbacks
-   * Removes previous rollbacks before Date
-   * by Date string a count of rollbacks to
-   * be removed or by rollbackId. When a number
-   * is provided the first of number provided
-   * will be removed. The last rollback is
-   * always preserved.
-   *
-   * @param by the date string or number of rollbacks to remove.
-   * @param save when false changes are not saved to file.
-   */
-  removeRollbacks(by: string | number | Date, save?: boolean): IMustr {
+  get rollbacks(): IMustrRollbacks {
 
-    let date: Date;
-    let count: any = 0;
-    let rollbackId;
+    return {
 
-    // Internal helper removes by key
-    // checks if rollbacks folder exists
-    // if yes unlinks/deletes it.
-    const removeByKey = (key) => {
-
-      // Delete from collection.
-      delete this.rollbacks[key];
-
-      // If folder exists remove rollbacks folder.
-      const rollbackPath = join(this.options.configDir, this.rollbacksDir, key);
-
-      // If path exists remove.
-      if (existsSync(rollbackPath))
-        removeSync(rollbackPath);
-
-      // Check if should save rollback changes.
-      if (save !== false)
-        this.saveRollbacks();
+      get: this.getRollbacks.bind(this),
+      add: this.addRollback.bind(this),
+      reindex: this.reindexRollbacks.bind(this),
+      save: this.saveRollbacks.bind(this),
+      remove: this.removeRollbacks.bind(this)
 
     };
 
-    // Check if is rollback id or
-    // string to be converted to date.
-    if (_isString(by)) {
-      if (this.rollbackIdExp.test(by))
-        rollbackId = by;
-      else
-        date = new Date(by);
-    }
-
-    else if (_isNumber(by))
-      count = by;
-
-    else if (by instanceof Date)
-      date = by;
-
-    else
-      this.log.error(`unsupported typeof ${typeof by} detected.`);
-
-    const keys = _keys(this.rollbacks).sort();
-
-    // Ensure count is no more than one
-    // less than the lenght of keys.
-    if (count >= keys.length)
-      count = keys.length - 1;
-
-    // Delete by id.
-    if (rollbackId) {
-      removeByKey(rollbackId);
-    }
-
-    // Delete by count.
-    else if (count > 0) {
-
-      let ctr = 0;
-
-      while (ctr < count) {
-        const key = keys[ctr];
-        removeByKey(key);
-        ctr++;
-      }
-
-    }
-
-    else if (date) {
-
-      const filterDate = date.getTime();
-
-      keys.forEach((k, i) => {
-
-        if ((i + 1) >= keys.length)
-          return;
-
-        let ts: any = Number(k.split('-')[0]);
-
-        if (ts < filterDate) {
-          removeByKey(k);
-        }
-
-      });
-
-    }
-
-    else {
-      this.log.warn(`0 rollbacks removed, unsupported type ${typeof by} or no unmatched criteria.`);
-    }
-
-    return this;
-
   }
 
-  /**
-   * Reindex Rollbacks
-   * Iterates rollbacks.json re-sorts order
-   * optionally prunes records where rollback
-   * files are missing.
-   *
-   * @param prune when true prunes entries where missing required rollback folder/files.
-   */
-  reindexRollbacks(prune?: boolean): IMustr {
-
-    const keys = _keys(this.rollbacks).sort();
-    const dirs = this.getDirs(resolve(this.options.configDir, this.rollbacksDir));
-    const tmp: IMap<IRollbackContainer> = {};
-
-
-    // If directories ensure matching
-    // keys in rollbacks.json.
-    if (prune !== false) {
-
-      dirs.forEach((d) => {
-
-        // If key doesn't exist remove dir.
-        if (keys.indexOf(d) === -1)
-          removeSync(resolve(this.options.configDir, this.rollbacksDir, d));
-
-      });
-
-    }
-
-    // Iterate keys and ensure rollbacks
-    // contain value paths etc.
-    keys.forEach((k) => {
-
-      let rb = this.rollbacks[k];
-      let i = rb.rollbacks.length;
-
-      // Check if should prune.
-      if (prune !== false) {
-
-        while (i--) {
-          const r = rb.rollbacks[i];
-          if (r.rollbackFrom && !existsSync(r.rollbackFrom))
-            delete rb.rollbacks[i];
-        }
-
-        // If we still have rollbacks then add
-        // to the temp object.
-        if (rb.rollbacks && rb.rollbacks.length)
-          tmp[k] = rb;
-
-      }
-
-      // Otherwise just add to
-      // temp object.
-      else {
-        tmp[k] = rb;
-      }
-
-    });
-
-    // Update to reindex object.
-    this.rollbacks = tmp;
-
-    return this;
-
-  }
-
-  /**
-   * Load Rollbacks
-   * Loads the rollbacks config file.
-   */
-  loadRollbacks(reindex?: boolean): IMustr {
-    this.rollbacks = this.tryRequire(this.rollbacksPath);
-    if (reindex)
-      this.reindexRollbacks();
-    return this;
-  }
-
-  /**
-   * Show Rollbacks
-   * Shows details/stats for recoreded rollbacks.
-   *
-   * @param display when false will NOT display stats in console.
-   */
-  getRollbacks(): IMap<IRollbackStat> {
-    const obj = this.rollbacks;
-    const result: { [key: string]: IRollbackStat } = {};
-    const keys = Object.keys(this.rollbacks).sort();
-    let i = keys.length;
-    while (i--) {
-      const id = keys[i];
-      const rb: IRollbackContainer = this.rollbacks[id];
-      const tmp: IRollbackStat = {};
-      tmp.id = id;
-      tmp.timestamp = rb.timestamp;
-      tmp.count = rb.rollbacks.length;
-      tmp.templates = rb.rollbacks.map(r => r.template);
-      result[id] = tmp;
-    }
-    return result;
-  }
-
-  /**
-   * Save Rollbacks
-   * Writes current rollbacks to file.
-   *
-   * @param prune when false prevents pruning rollbacks before save.
-   */
-  saveRollbacks(prune?: boolean): IMustr {
-
-    const keys = _keys(this.rollbacks).sort();
-    let removeCount = this.options.maxRollbacks === 0 ? 0 : keys.length - this.options.maxRollbacks;
-
-    // Check if should prune previous
-    // rollbacks.
-    if (removeCount > 0 && prune !== false)
-      return this.removeRollbacks(removeCount);
-
-    writeFileSync(this.rollbacksPath, JSON.stringify(this.rollbacks, null, 2));
-
-    return this;
-
-  }
+  // Utils //
 
   /**
    * Transform To
@@ -1811,7 +1854,7 @@ export class Mustr extends EventEmitter implements IMustr {
     to = to.trim();
 
     if (_isUndefined(caseMap[to])) {
-      this.log.warn(`invalid transform case ${to} (${chalk.cyan(validTypes.join(', '))}).`);
+      this.log.warn(`invalid transform case ${to} (${this.colurs.cyan(validTypes.join(', '))}).`);
       return str;
     }
 

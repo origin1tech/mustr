@@ -1,9 +1,10 @@
 .tmp
 .vscode
-src/
 test/
 temp.js
 temp.ts
 test.js
 test.ts
 typedoc.json
+src/test/
+dist/test/

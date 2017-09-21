@@ -1,13 +1,15 @@
 
-import { Mustr } from './index';
-import { resolve } from 'path';
-import { Pargv, Chalk } from 'pargv';
+import { Mustr } from './';
+import { resolve, join } from 'path';
+import { Pargv } from 'pargv';
+import { Colurs } from 'colurs';
+import { includes as contains } from 'lodash';
 
 let mustrConfig;
 const pargv = new Pargv();
-const chalk = new Chalk();
 
 const mustrPath = resolve(process.cwd(), 'mustr.json');
+const pkg = require(join(__dirname, '../package.json'));
 
 // Try to load the mustr.json config if exists.
 try {
@@ -19,111 +21,40 @@ catch (ex) {
 
 // Create Mustr instance.
 const mu = new Mustr(mustrConfig);
-
-console.log();
+const log = mu.log;
+const colurs = mu.colurs;
 
 function ensureConfig() {
-
   if (!mustrConfig || !mustrConfig.configDir)
-    mu.log.warn('invalid or missing Mustr config, do you need to call mu init?').write().exit();
-
-  const name = pargv.getCmd(0);
-  const output = pargv.getCmd(1);
-  const options = pargv.getFlags();
-
-  if (options.f) {
-    options.force = true;
-    delete options.f;
-  }
-
-  return {
-    name,
-    output,
-    options
-  };
-
-}
-
-// Handler for help.
-function help() {
-
-  const padBtm = [0, 0, 1, 0];
-
-  const msg =
-    ' See additional required/optional arguments for each command below. \n';
-
-  pargv
-    .logo('Mustr', 'cyan')
-    .ui(95)
-    .join(chalk.magenta('Usage:'), 'mu', chalk.cyan('<cmd>'), '\n')
-    .div({ text: chalk.bgBlue.white(msg) })
-    .div(
-    { text: chalk.cyan('help, h'), width: 35, padding: padBtm },
-    { text: chalk.gray('displays help and usage information.'), width: 40, padding: padBtm }
-    )
-    .div(
-    { text: chalk.cyan('init, i'), width: 35, padding: padBtm },
-    { text: chalk.gray('initialize the application for use with Mustr.'), width: 40, padding: padBtm }
-    )
-    .div(
-    { text: `${chalk.cyan('generate, g')} ${chalk.white('<template>')} ${chalk.magenta('[output]')}`, width: 35, padding: padBtm },
-    { text: chalk.gray('generates and renders a template.'), width: 40, padding: padBtm }
-    )
-    .div(
-    { text: chalk.white('<template>'), width: 35, padding: [0, 2, 0, 2] },
-    { text: chalk.gray('template to generate and compile.'), width: 40 },
-    { text: chalk.red('[required]'), align: 'right' }
-    )
-    .div(
-    { text: chalk.white('[output]'), width: 35, padding: [0, 2, 0, 2] },
-    { text: chalk.gray('output name/path for template'), width: 40, padding: padBtm }
-    )
-    .div(
-    { text: `${chalk.cyan('rollback, r')} ${chalk.white('<name/id>')} ${chalk.magenta('[output]')}`, width: 35, padding: padBtm },
-    { text: chalk.gray('Rolls back a template or component.'), width: 40, padding: padBtm }
-    )
-    .div(
-    { text: chalk.white('<name/id>'), width: 35, padding: [0, 2, 0, 2] },
-    { text: chalk.gray('the rollback id, index or template name.'), width: 40 },
-  )
-    .div(
-    { text: chalk.white('[output]'), width: 35, padding: [0, 2, 0, 2] },
-    { text: chalk.gray('output name/path for template'), width: 40, padding: padBtm }
-    )
-    .div(
-    { text: `${chalk.cyan('show, s')} ${chalk.white('<type>')}`, width: 35, padding: padBtm },
-    { text: chalk.gray('shows details/stats for the given type.'), width: 40, padding: padBtm }
-    )
-    .div(
-    { text: chalk.white('<type>'), width: 35, padding: [0, 2, 0, 2] },
-    { text: chalk.gray('currently there is only one type "rollbacks"'), width: 40 },
-  )
-    .show();
+    log
+      .warn('invalid or missing Mustr config, do you need to call mu init?')
+      .write()
+      .exit();
 }
 
 // Handler for initializing.
-function init() {
-  mu.init(pargv.f);
+function init(parsed, cmd) {
+  mu.init(parsed.force);
 }
 
 // Handler for generating templates.
-function generate() {
+function generate(template, output, parsed, cmd) {
 
-  const parsed = ensureConfig();
+  ensureConfig();
 
-  if (!parsed.name)
-    mu.log.error('cannot generate template using name of undefined.\n').write().exit();
+  if (!template)
+    log
+      .error('cannot generate template using name of undefined.\n')
+      .write()
+      .exit();
 
   // Generate the template.
-  mu.render(parsed.name, parsed.output, parsed.options);
+  mu.render(template, output, parsed);
 
 }
 
 // Handler for rollbacks
-function rollback() {
-
-  const parsed = ensureConfig();
-  let name: any = parsed.name;
+function rollback(name, output, parsed, cmd) {
 
   // check if is an index number.
   // if yes try to lookup the id
@@ -131,9 +62,9 @@ function rollback() {
   try {
     let idx: any;
     if (/^[0-9]+$/.test(name)) {
-      idx = parseInt(parsed.name) - 1;
+      idx = parseInt(name) - 1;
       if (idx >= 0) {
-        const keys = Object.keys(mu.rollbacks);
+        const keys = Object.keys(mu._rollbacks);
         const key = keys[idx];
         if (key)
           name = key;
@@ -142,77 +73,116 @@ function rollback() {
   }
   catch (ex) { }
 
-  mu.rollback(parsed.name, parsed.output);
+  mu.rollback(name, output);
 
 }
 
 // Handler for show
-function show() {
+function show(type, parsed, cmd) {
 
-  const parsed = ensureConfig();
+  ensureConfig();
 
   function showRollbacks() {
 
-    const rollbacks = mu.getRollbacks();
+    const rollbacks = mu.rollbacks.get();
     const keys = Object.keys(rollbacks);
     const padBtm = [0, 0, 1, 0];
-    const ui = pargv.ui(105);
+    const layoutWidth = 80;
+    const layout = pargv.layout(layoutWidth);
     let i = keys.length;
 
-    const hdrNo = { text: ` `, width: 5 };
-    const hdrId = { text: `${chalk.underline.gray('ID')}`, width: 20 };
-    const hdrTs = { text: `${chalk.underline.gray('Timestamp')}`, width: 30 };
-    const hdrCt = { text: `${chalk.underline.gray('Count')}`, width: 10 };
-    const hdrTpl = { text: `${chalk.underline.gray('Templates')}`, width: 35, padding: padBtm };
+    const col1w = Math.floor(layoutWidth * .10);
+    // const col4w = col1w;
+    const col2w = Math.floor(layoutWidth * .50);
+    // const col3w = Math.floor(layoutWidth * .25);
+    const col5w = layoutWidth - (col1w + col2w);
 
-    ui.div(hdrNo, hdrId, hdrTs, hdrCt, hdrTpl);
 
-    while (i--) {
-      const key = keys[i];
-      const rb = rollbacks[key];
-      const no = { text: `${i + 1})`, width: 5 };
-      const id = { text: `${chalk.cyan(rb.id)}`, width: 20 };
-      const ts = { text: `${chalk.yellow(rb.timestamp)}`, width: 30 };
-      const ct = { text: `${chalk.green(rb.count + '')}`, width: 10 };
-      const tpl = { text: `${chalk.magenta(rb.templates.join(', '))}`, width: 35 };
-      ui.div(no, id, ts, ct, tpl);
+    const hdrNo = { text: colurs.underline.gray('No.'), with: col1w };
+    const hdrId = { text: `${colurs.underline.gray('ID')}`, width: col2w };
+    // const hdrTpl = { text: `${colurs.underline.gray('Templates')}`, width: col3w };
+    // const hdrCt = { text: `${colurs.underline.gray('Count')}`, width: col4w };
+    const hdrTs = { text: `${colurs.underline.gray('Timestamp')}`, width: col5w, align: 'center' };
+
+    layout.div(
+      { text: colurs.blue('Rollbacks') as string + colurs.gray(' (current rollbacks)') as string, padding: [1, 0, 1, 0] }
+    );
+
+    if (keys.length) {
+      // layout.div(hdrNo, hdrId, hdrTpl, hdrCt, hdrTs); // create header.
+      // layout.div(hdrNo, hdrId, hdrTpl, hdrTs); // create header.
+      layout.div(hdrNo, hdrId, hdrTs); // create header.
+      layout.repeat('-', null, padBtm);
     }
 
-    ui.show();
+    while (i--) {
+
+      const key = keys[i];
+      const rb = rollbacks[key];
+      const no = { text: `${i + 1})`, width: col1w };
+      const id = { text: `${colurs.cyan(rb.id)}`, width: col2w };
+      // const tpl = { text: `${colurs.gray(rb.templates.join(', '))}`, width: col3w };
+      const tpl = { text: `${colurs.gray(rb.templates.join(', '))}` };
+      // const ct = { text: `${colurs.yellow(rb.count + '')}`, width: col4w };
+      const ts = { text: `${colurs.magenta(rb.timestamp)}`, width: col5w, align: 'center' };
+
+      // layout.div(no, id, tpl, ct, ts); // output line.
+      // layout.div(no, id, tpl, ts); // output line.
+      layout.div(no, id, ts); // output line.
+      layout.div({ text: '', width: col1w }, tpl);
+
+    }
+
+    if (!keys.length) {
+      layout
+        .div(colurs.italic.gray('0 records found.'))
+        .div('');
+    }
+
+    layout.show(); // output the layout.
+    console.log();
 
   }
 
-  switch (parsed.name) {
-
-    case 'r':
-      showRollbacks();
-      break;
-
-    case 'rollbacks':
-      showRollbacks();
-      break;
-
-    default:
-      break;
-
+  if (contains(['r', 'rollbacks'], type)) {
+    showRollbacks();
   }
 
 }
 
-// Bind CLI methods.
 pargv
-  .action('help', 'h', help)
-  .action('init', 'i', init)
-  .action('generate', 'g', generate)
-  .action('rollback', 'r', rollback)
-  .action('show', 's', show)
-  .action('*', () => {
-    mu.log
-      .warn('no command selected, did you mean to call "mu help"?')
-      .write()
-      .exit();
-  })
-  .parse();
+  .name('Mustr')
+  .description('Scaffolding tool using Mustache templates.')
+  .version(pkg.version)
+  .license(pkg.license)
+
+  .command('init.i --force.f', 'initializes project for use with Mustr.')
+  .action(init)
+
+  .command('generate.g <template> [output]', 'generates a new file from template.')
+  .option('--ext, -e [ext]', 'extension for template.')
+  .option('--casing, -c [casing]', 'component name casing.')
+  .option('--filename-casing, -f [filename]', 'casing for filename.')
+  .option('--rename, -r [rename]', 'rename file to this value.')
+  .option('--output-dir, -o [output]', 'custom output directory.')
+  .describe('template', 'the template used in generation.')
+  .describe('output', 'template output override path.')
+  .action(generate)
+
+  .command('rollback.r [name] [output]', 'rollsback a previously generated template.')
+  .describe('name', 'the name or id of the event to rollback.')
+  .describe('output', 'template output override path.')
+  .action(rollback)
+
+  .command('show.s <type>', 'show details/stats for a given type.')
+  .describe('type', 'the type to show info for.')
+  .action(show)
+
+  .completion()
+  .exec();
+
+
+
 
 
 

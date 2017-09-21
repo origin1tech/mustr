@@ -1,4 +1,5 @@
-import { ILogger } from 'pargv';
+import { Timbr } from 'timbr';
+import { IColurs } from 'colurs';
 export declare type BeforeRender = {
     (template?: ITemplate, done?: {
         ();
@@ -110,18 +111,27 @@ export interface IMustrOptions {
     renderer?: RenderMethod;
     maxRollbacks?: number;
 }
+export interface IMustrRollbacks {
+    get(display?: boolean): IMap<IRollbackStat>;
+    add(id: string, rollback: IRollback): IRollbackContainer;
+    reindex(prune?: boolean): IMustr;
+    save(prune?: boolean): IMustr;
+    remove(by: string | number | Date, save?: boolean): IMustr;
+}
 export interface IMustr {
     Engine: Object;
     renderer: RenderMethod;
     cwd: string;
-    log: ILogger;
-    registerPath: string;
-    templatesPath: string;
-    outputPath: string;
-    templatesGlob: string[];
-    templates: IMap<ITemplate>;
-    components: IMap<IComponent>;
+    log: Timbr;
+    colurs: IColurs;
     options: IMustrOptions;
+    rollbacks: IMustrRollbacks;
+    _registerPath: string;
+    _templatesPath: string;
+    _outputPath: string;
+    _templatesGlob: string[];
+    _templates: IMap<ITemplate>;
+    _components: IMap<IComponent>;
     init(force?: boolean): void;
     load(): IMustr;
     setEngine(Engine: Object, renderer: RenderMethod): any;
@@ -138,10 +148,6 @@ export interface IMustr {
     render(template: ITemplate, options?: IRegisterConfig, force?: boolean, done?: NodeCallback): void;
     render(name: string | ITemplate, output?: string | IRegisterConfig | NodeCallback | boolean, options?: IRegisterConfig | NodeCallback | boolean, force?: boolean | NodeCallback, done?: NodeCallback, group?: string): void;
     rollback(name?: string, output?: string): IMustr;
-    removeRollbacks(by: string | number | Date, save?: boolean): IMustr;
-    saveRollbacks(prune?: boolean): IMustr;
-    loadRollbacks(reindex?: boolean): IMustr;
-    getRollbacks(display?: boolean): IMap<IRollbackStat>;
     inject(options: IInject, done?: NodeCallback): void;
     inject(filename: string | IInject, find: string | RegExp | NodeCallback, insert: string | string[], strategy: 'before' | 'after' | 'first' | 'last' | 'replace', done?: NodeCallback): void;
     transformCase(str: string, to: string): string;

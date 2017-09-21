@@ -5,19 +5,29 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "clean": "node ./build/clean",
-    "copy": "node ./build/copy",
-    "compile": "node ./node_modules/typescript/bin/tsc -p ./src/tsconfig.json",
-    "bump": "node ./build/bump",
-    "build": "npm run clean && npm run copy && npm run compile",
-    "commit": "git add . && git commit -am 'auto commit'",
-    "push": "git push",
-    "release": "npm run build && npm run docs && npm run bump && npm run commit && npm run push && npm publish",
-    "test": "mocha",
-    "docs": "node ./node_modules/typedoc/bin/typedoc --out ./docs ./src --options ./typedoc.json"
+    "clean": "node ./build clean",
+    "copy": "node ./build copy",
+    "compile": "node ./build compile",
+    "bump": "node ./build bump",
+    "build": "node ./build build",
+    "commit": "node ./build commit",
+    "docs": "node ./build docs",
+    "release": "node ./build release",
+    "test": "node ./build test"
   },
   "bin": {
     "mu": "./bin/mustr"
+  },
+  "build": {
+    "clean": [
+      "./dist"
+    ],
+    "copy": {
+      "blueprints": {
+        "src": "./src/blueprints",
+        "dest": "./dist/blueprints"
+      }
+    }
   },
   "repository": {
     "type": "git",
@@ -37,13 +47,15 @@
   "homepage": "https://github.com/origin1tech/mustr#readme",
   "dependencies": {
     "async": "^2.3.0",
+    "colurs": "^1.0.12",
     "detect-indent": "^5.0.0",
     "front-matter": "^2.1.2",
     "fs-extra": "^2.1.2",
     "glob": "^7.1.1",
     "lodash": "^4.17.4",
     "mustache": "^2.3.0",
-    "pargv": "^1.5.0"
+    "pargv": "^2.0.6",
+    "timbr": "^1.0.1"
   },
   "devDependencies": {
     "@types/async": "^2.0.40",
@@ -56,6 +68,7 @@
     "chai": "^3.5.0",
     "del": "^2.2.2",
     "mocha": "^3.2.0",
+    "stiks": "^1.0.14",
     "ts-node": "^3.0.2",
     "typedoc": "^0.5.10",
     "typescript": "^2.2.2"

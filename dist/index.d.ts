@@ -1,7 +1,8 @@
 /// <reference types="node" />
-import { ILogger } from 'pargv';
+import { Timbr } from 'timbr';
+import { IColurs } from 'colurs';
 import { EventEmitter } from 'events';
-import { IMustr, IMustrOptions, ITemplate, NodeCallback, IRegister, IRegisterConfig, IInject, IComponent, RenderMethod, IRollback, IRollbackContainer, IRollbackStat, IMap } from './interfaces';
+import { IMustr, IMustrOptions, ITemplate, NodeCallback, IRegister, IRegisterConfig, IInject, IComponent, RenderMethod, IRollbackContainer, IMap, IMustrRollbacks } from './interfaces';
 export declare class Mustr extends EventEmitter implements IMustr {
     private tplexp;
     private loaded;
@@ -10,16 +11,17 @@ export declare class Mustr extends EventEmitter implements IMustr {
     Engine: Object;
     renderer: RenderMethod;
     cwd: string;
-    log: ILogger;
-    configPath: string;
-    registerPath: string;
-    templatesPath: string;
-    outputPath: string;
-    rollbacksPath: string;
-    templatesGlob: string[];
-    templates: IMap<ITemplate>;
-    components: IMap<IComponent>;
-    rollbacks: IMap<IRollbackContainer>;
+    log: Timbr;
+    colurs: IColurs;
+    _configPath: string;
+    _registerPath: string;
+    _templatesPath: string;
+    _outputPath: string;
+    _rollbacksPath: string;
+    _templatesGlob: string[];
+    _templates: IMap<ITemplate>;
+    _components: IMap<IComponent>;
+    _rollbacks: IMap<IRollbackContainer>;
     options: IMustrOptions;
     constructor(options?: IMustrOptions);
     /**
@@ -96,6 +98,55 @@ export declare class Mustr extends EventEmitter implements IMustr {
      */
     private getDirs(dir);
     /**
+     * Add Rollback
+     * Adds a rollback to the collection.
+     *
+     * @param id the id of the rollback to add.
+     * @param rollback the rollback object.
+     */
+    private addRollback(id, rollback);
+    /**
+     * Remove Rollbacks
+     * Removes previous rollbacks before Date
+     * by Date string a count of rollbacks to
+     * be removed or by rollbackId. When a number
+     * is provided the first of number provided
+     * will be removed. The last rollback is
+     * always preserved.
+     *
+     * @param by the date string or number of rollbacks to remove.
+     * @param save when false changes are not saved to file.
+     */
+    private removeRollbacks(by, save?);
+    /**
+     * Reindex Rollbacks
+     * Iterates rollbacks.json re-sorts order
+     * optionally prunes records where rollback
+     * files are missing.
+     *
+     * @param prune when true prunes entries where missing required rollback folder/files.
+     */
+    private reindexRollbacks(prune?);
+    /**
+     * Load Rollbacks
+     * Loads the rollbacks config file.
+     */
+    private loadRollbacks(reindex?);
+    /**
+     * Show Rollbacks
+     * Shows details/stats for recoreded rollbacks.
+     *
+     * @param display when false will NOT display stats in console.
+     */
+    private getRollbacks();
+    /**
+     * Save Rollbacks
+     * Writes current rollbacks to file.
+     *
+     * @param prune when false prevents pruning rollbacks before save.
+     */
+    private saveRollbacks(prune?);
+    /**
      * Init
      * Initializes Mustr for current project
      *
@@ -115,7 +166,7 @@ export declare class Mustr extends EventEmitter implements IMustr {
      * @param Engine the template Engine used for rendering.
      * @param renderer the rendering method.
      */
-    setEngine(Engine: Object, renderer: RenderMethod): ILogger;
+    setEngine(Engine: Object, renderer: RenderMethod): Timbr;
     /**
      * Configure
      * Configures template for output.
@@ -164,7 +215,7 @@ export declare class Mustr extends EventEmitter implements IMustr {
      * @param done Node style callback with err and rendered template.
      * @param group private variable used only internally.
      */
-    render(name: string | ITemplate, output?: string | IRegisterConfig | NodeCallback | boolean, options?: IRegisterConfig | NodeCallback | boolean, force?: boolean | NodeCallback, done?: NodeCallback, group?: any): ILogger;
+    render(name: string | ITemplate, output?: string | IRegisterConfig | NodeCallback | boolean, options?: IRegisterConfig | NodeCallback | boolean, force?: boolean | NodeCallback, done?: NodeCallback, group?: any): Timbr;
     /**
      * Inject
      * Creates a file stream reading chunks until match.
@@ -180,17 +231,6 @@ export declare class Mustr extends EventEmitter implements IMustr {
      */
     inject(filename: string | IInject, find?: string | RegExp | NodeCallback, strategy?: 'before' | 'after' | 'first' | 'last' | 'replace', insert?: string | string[], done?: NodeCallback): void;
     /**
-  <<<<<<< HEAD
-     * Add Rollback
-     * Adds a rollback to the collection.
-     *
-     * @param id the id of the rollback to add.
-     * @param rollback the rollback object.
-     */
-    addRollback(id: string, rollback: IRollback): IRollbackContainer;
-    /**
-  =======
-  >>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
      * Rollback
      * Rolls back and removes generated templates.
      *
@@ -199,47 +239,7 @@ export declare class Mustr extends EventEmitter implements IMustr {
      * @param name the template or group name.
      */
     rollback(name?: string, output?: string): IMustr;
-    /**
-     * Remove Rollbacks
-     * Removes previous rollbacks before Date
-     * by Date string a count of rollbacks to
-     * be removed or by rollbackId. When a number
-     * is provided the first of number provided
-     * will be removed. The last rollback is
-     * always preserved.
-     *
-     * @param by the date string or number of rollbacks to remove.
-     * @param save when false changes are not saved to file.
-     */
-    removeRollbacks(by: string | number | Date, save?: boolean): IMustr;
-    /**
-     * Reindex Rollbacks
-     * Iterates rollbacks.json re-sorts order
-     * optionally prunes records where rollback
-     * files are missing.
-     *
-     * @param prune when true prunes entries where missing required rollback folder/files.
-     */
-    reindexRollbacks(prune?: boolean): IMustr;
-    /**
-     * Load Rollbacks
-     * Loads the rollbacks config file.
-     */
-    loadRollbacks(reindex?: boolean): IMustr;
-    /**
-     * Show Rollbacks
-     * Shows details/stats for recoreded rollbacks.
-     *
-     * @param display when false will NOT display stats in console.
-     */
-    getRollbacks(): IMap<IRollbackStat>;
-    /**
-     * Save Rollbacks
-     * Writes current rollbacks to file.
-     *
-     * @param prune when false prevents pruning rollbacks before save.
-     */
-    saveRollbacks(prune?: boolean): IMustr;
+    readonly rollbacks: IMustrRollbacks;
     /**
      * Transform To
      * Transforms a string to the desired casing.

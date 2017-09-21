@@ -1,4 +1,5 @@
-import { ILogger, IPargv } from 'pargv';
+import { Timbr } from 'timbr';
+import { IColurs } from 'colurs';
 
 export type BeforeRender = { (template?: ITemplate, done?: { () }) };
 
@@ -123,19 +124,30 @@ export interface IMustrOptions {
   maxRollbacks?: number;      // maximum number of stored rollbacks.
 }
 
+export interface IMustrRollbacks {
+  get(display?: boolean): IMap<IRollbackStat>;
+  add(id: string, rollback: IRollback): IRollbackContainer;
+  reindex(prune?: boolean): IMustr;
+  save(prune?: boolean): IMustr;
+  remove(by: string | number | Date, save?: boolean): IMustr;
+}
+
 export interface IMustr {
 
   Engine: Object;
   renderer: RenderMethod;
   cwd: string;
-  log: ILogger;
-  registerPath: string;
-  templatesPath: string;
-  outputPath: string;
-  templatesGlob: string[];
-  templates: IMap<ITemplate>;
-  components: IMap<IComponent>;
+  log: Timbr;
+  colurs: IColurs;
   options: IMustrOptions;
+  rollbacks: IMustrRollbacks;
+
+  _registerPath: string;
+  _templatesPath: string;
+  _outputPath: string;
+  _templatesGlob: string[];
+  _templates: IMap<ITemplate>;
+  _components: IMap<IComponent>;
 
   init(force?: boolean): void;
   load(): IMustr;
@@ -158,10 +170,10 @@ export interface IMustr {
   render(name: string | ITemplate, output?: string | IRegisterConfig | NodeCallback | boolean, options?: IRegisterConfig | NodeCallback | boolean, force?: boolean | NodeCallback, done?: NodeCallback, group?: string): void;
 
   rollback(name?: string, output?: string): IMustr;
-  removeRollbacks(by: string | number | Date, save?: boolean): IMustr;
-  saveRollbacks(prune?: boolean): IMustr;
-  loadRollbacks(reindex?: boolean): IMustr;
-  getRollbacks(display?: boolean): IMap<IRollbackStat>;
+  // removeRollbacks(by: string | number | Date, save?: boolean): IMustr;
+  // saveRollbacks(prune?: boolean): IMustr;
+  // loadRollbacks(reindex?: boolean): IMustr;
+  // getRollbacks(display?: boolean): IMap<IRollbackStat>;
 
   inject(options: IInject, done?: NodeCallback): void;
   inject(filename: string | IInject,

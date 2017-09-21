@@ -2,33 +2,75 @@
 	// See https://go.microsoft.com/fwlink/?LinkId=733558
 	// for the documentation about the tasks.json format
 	"version": "2.0.0",
-	"tasks": [
-		{
+	"tasks": [{
 			"taskName": "build",
-			"command": "tsc",
-			"isShellCommand": true,
-			"args": [
-				"-p",
-				"./src/tsconfig.json"
-			],
-			"showOutput": "silent",
+			"type": "shell",
+			"windows": {
+				"command": "tsc",
+				"args": [
+					"-p",
+					"${workspaceRoot}\\src\\tsconfig.json"
+				]
+			},
+			"osx": {
+				"command": "tsc",
+				"args": [
+					"-p",
+					"./src/tsconfig.json"
+				]
+			},
+			"linux": {
+				"command": "tsc",
+				"args": [
+					"-p",
+					"./src/tsconfig.json"
+				]
+			},
 			"problemMatcher": "$tsc",
-			"echoCommand": true,
 			"isBackground": false,
-			"isBuildCommand": true
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
 		},
 		{
 			"taskName": "watch",
-			"command": "tsc",
-			"isShellCommand": true,
-			"args": [
-				"-p",
-				"./src/tsconfig.json",
-				"-w"
-			],
-			"showOutput": "silent",
+			"windows": {
+				"command": "tsc",
+				"args": [
+					"-p",
+					"${workspaceRoot}\\src\\tsconfig.json",
+					"-w"
+				]
+			},
+			"osx": {
+				"command": "tsc",
+				"args": [
+					"-p",
+					"./src/tsconfig.json",
+					"-w"
+				]
+			},
+			"linux": {
+				"command": "tsc",
+				"args": [
+					"-p",
+					"./src/tsconfig.json",
+					"-w"
+				]
+			},
+			"group": "build",
 			"problemMatcher": "$tsc",
-			"isBackground": false
+			"isBackground": false,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
 		}
 	]
 }

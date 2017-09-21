@@ -13,7 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fs_extra_1 = require("fs-extra");
 var readline = require("readline");
 var path_1 = require("path");
-var pargv_1 = require("pargv");
+var timbr_1 = require("timbr");
+var colurs_1 = require("colurs");
 var os_1 = require("os");
 var glob = require("glob");
 var di = require("detect-indent");
@@ -22,7 +23,6 @@ var lodash_1 = require("lodash");
 var events_1 = require("events");
 var fm = require("front-matter");
 var Mustache = require("mustache");
-var chalk = new pargv_1.Chalk();
 var defaults = {
     configDir: './mustr',
     outputDir: './src',
@@ -43,30 +43,36 @@ var Mustr = (function (_super) {
         // Utils
         _this.cwd = process.cwd().toLowerCase();
         // Parsed templates.
-        _this.templates = {};
-        _this.components = {};
-        _this.rollbacks = {};
+        _this._templates = {};
+        _this._components = {};
+        _this._rollbacks = {};
         _this.options = lodash_1.extend({}, defaults, options);
-        _this.log = pargv_1.logger();
+        _this.log = new timbr_1.Timbr({
+            styles: {
+                error: 'red'
+            }
+        });
+        _this.colurs = new colurs_1.Colurs();
         // backward compat.
         if (_this.options['Engine'] && !_this.options.engine)
             _this.options.engine = _this.options['Engine'];
-        _this.configPath = path_1.resolve(_this.cwd, _this.options.configDir);
-        _this.templatesPath = path_1.resolve(_this.cwd, path_1.join(_this.options.configDir, '/**/*.tpl')).toLowerCase();
+        _this._configPath = path_1.resolve(_this.options.configDir);
+        _this._templatesPath = path_1.resolve(path_1.join(_this.options.configDir, '/**/*.tpl')).toLowerCase();
         // Resolve the base directory.
-        _this.outputPath = path_1.resolve(_this.cwd, _this.options.outputDir).toLowerCase();
+        _this._outputPath = path_1.resolve(_this.options.outputDir).toLowerCase();
         // Resolve the config path.
-        _this.registerPath = path_1.resolve(_this.cwd, _this.options.configDir, 'register.js').toLowerCase();
+        _this._registerPath = path_1.resolve(_this.options.configDir, 'register.js').toLowerCase();
         // Normalized the template extension.
         _this.options.templateExt = _this.normalizedExt(_this.options.templateExt);
         // Path to rollbacks register.
-        _this.rollbacksPath = path_1.resolve(_this.cwd, path_1.join(_this.options.configDir, 'rollbacks.json'));
+        _this._rollbacksPath = path_1.resolve(path_1.join(_this.options.configDir, 'rollbacks.json'));
         _this.tplexp = new RegExp(_this.options.templateExt + '$');
         _this.Engine = _this.options.engine || Mustache;
         _this.renderer = _this.options.renderer || Mustache.render;
         _this.load();
         return _this;
     }
+    // Private Utils //
     /**
      * Has Matter
      * Tests if string contains front matter.
@@ -123,7 +129,7 @@ var Mustr = (function (_super) {
         // When has extension readfile.
         if (EXT_EXP.test(template)) {
             // Static paths should resolve from working directory.
-            template = path_1.resolve(this.cwd, template);
+            template = path_1.resolve(template);
             // If template doesn't exist error & exit.
             if (!fs_extra_1.existsSync(template))
                 this.log.error("failed to resolve static template at path " + template + ". Exclude '.tpl from template name to reference loaded template.").exit();
@@ -131,7 +137,7 @@ var Mustr = (function (_super) {
             templatePath = template;
         }
         else if (!this.hasMatter(template) && !this.hasTemplate(template)) {
-            var filtered = this.templatesGlob.filter(function (t) {
+            var filtered = this._templatesGlob.filter(function (t) {
                 return path_1.parse(t).name === template;
             })[0];
             if (!filtered) {
@@ -207,7 +213,7 @@ var Mustr = (function (_super) {
      */
     Mustr.prototype.getPartial = function (partial) {
         var partialName = partial.toLowerCase();
-        var existing = this.templates[partialName];
+        var existing = this._templates[partialName];
         if (existing)
             return existing;
         partial = this.normalize(partial);
@@ -267,6 +273,201 @@ var Mustr = (function (_super) {
         return fs_extra_1.readdirSync(dir)
             .filter(function (f) { return fs_extra_1.statSync(path_1.join(dir, f)).isDirectory(); });
     };
+    // Private Rollbacks //
+    /**
+     * Add Rollback
+     * Adds a rollback to the collection.
+     *
+     * @param id the id of the rollback to add.
+     * @param rollback the rollback object.
+     */
+    Mustr.prototype.addRollback = function (id, rollback) {
+        if (this.options.maxRollbacks === 0)
+            return;
+        // Ensure id doesn't contain dots.
+        id = id.replace(/\./g, '-');
+        var rb = this._rollbacks[id] = this._rollbacks[id] || {};
+        if (!rb.timestamp)
+            rb.timestamp = (new Date()).toISOString();
+        rb.rollbacks = rb.rollbacks || [];
+        rb.rollbacks.push(rollback);
+        return rollback;
+    };
+    /**
+     * Remove Rollbacks
+     * Removes previous rollbacks before Date
+     * by Date string a count of rollbacks to
+     * be removed or by rollbackId. When a number
+     * is provided the first of number provided
+     * will be removed. The last rollback is
+     * always preserved.
+     *
+     * @param by the date string or number of rollbacks to remove.
+     * @param save when false changes are not saved to file.
+     */
+    Mustr.prototype.removeRollbacks = function (by, save) {
+        var _this = this;
+        var date;
+        var count = 0;
+        var rollbackId;
+        // Internal helper removes by key
+        // checks if rollbacks folder exists
+        // if yes unlinks/deletes it.
+        var removeByKey = function (key) {
+            // Delete from collection.
+            delete _this._rollbacks[key];
+            // If folder exists remove rollbacks folder.
+            var rollbackPath = path_1.join(_this.options.configDir, _this.rollbacksDir, key);
+            // If path exists remove.
+            if (fs_extra_1.existsSync(rollbackPath))
+                fs_extra_1.removeSync(rollbackPath);
+            // Check if should save rollback changes.
+            if (save !== false)
+                _this.saveRollbacks();
+        };
+        // Check if is rollback id or
+        // string to be converted to date.
+        if (lodash_1.isString(by)) {
+            if (this.rollbackIdExp.test(by))
+                rollbackId = by;
+            else
+                date = new Date(by);
+        }
+        else if (lodash_1.isNumber(by))
+            count = by;
+        else if (by instanceof Date)
+            date = by;
+        else
+            this.log.error("unsupported typeof " + typeof by + " detected.");
+        var keys = lodash_1.keys(this._rollbacks).sort();
+        // Ensure count is no more than one
+        // less than the lenght of keys.
+        if (count >= keys.length)
+            count = keys.length - 1;
+        // Delete by id.
+        if (rollbackId) {
+            removeByKey(rollbackId);
+        }
+        else if (count > 0) {
+            var ctr = 0;
+            while (ctr < count) {
+                var key = keys[ctr];
+                removeByKey(key);
+                ctr++;
+            }
+        }
+        else if (date) {
+            var filterDate_1 = date.getTime();
+            keys.forEach(function (k, i) {
+                if ((i + 1) >= keys.length)
+                    return;
+                var ts = Number(k.split('-')[0]);
+                if (ts < filterDate_1) {
+                    removeByKey(k);
+                }
+            });
+        }
+        else {
+            this.log.warn("0 rollbacks removed, unsupported type " + typeof by + " or no unmatched criteria.");
+        }
+        return this;
+    };
+    /**
+     * Reindex Rollbacks
+     * Iterates rollbacks.json re-sorts order
+     * optionally prunes records where rollback
+     * files are missing.
+     *
+     * @param prune when true prunes entries where missing required rollback folder/files.
+     */
+    Mustr.prototype.reindexRollbacks = function (prune) {
+        var _this = this;
+        var keys = lodash_1.keys(this._rollbacks).sort();
+        var dirs = this.getDirs(path_1.resolve(this.options.configDir, this.rollbacksDir));
+        var tmp = {};
+        // If directories ensure matching
+        // keys in rollbacks.json.
+        if (prune !== false) {
+            dirs.forEach(function (d) {
+                // If key doesn't exist remove dir.
+                if (keys.indexOf(d) === -1)
+                    fs_extra_1.removeSync(path_1.resolve(_this.options.configDir, _this.rollbacksDir, d));
+            });
+        }
+        // Iterate keys and ensure rollbacks
+        // contain value paths etc.
+        keys.forEach(function (k) {
+            var rb = _this._rollbacks[k];
+            var i = rb.rollbacks.length;
+            // Check if should prune.
+            if (prune !== false) {
+                while (i--) {
+                    var r = rb.rollbacks[i];
+                    if (r.rollbackFrom && !fs_extra_1.existsSync(r.rollbackFrom))
+                        delete rb.rollbacks[i];
+                }
+                // If we still have rollbacks then add
+                // to the temp object.
+                if (rb.rollbacks && rb.rollbacks.length)
+                    tmp[k] = rb;
+            }
+            else {
+                tmp[k] = rb;
+            }
+        });
+        // Update to reindex object.
+        this._rollbacks = tmp;
+        return this;
+    };
+    /**
+     * Load Rollbacks
+     * Loads the rollbacks config file.
+     */
+    Mustr.prototype.loadRollbacks = function (reindex) {
+        this._rollbacks = this.tryRequire(this._rollbacksPath);
+        if (reindex)
+            this.reindexRollbacks();
+        return this;
+    };
+    /**
+     * Show Rollbacks
+     * Shows details/stats for recoreded rollbacks.
+     *
+     * @param display when false will NOT display stats in console.
+     */
+    Mustr.prototype.getRollbacks = function () {
+        var obj = this._rollbacks;
+        var result = {};
+        var keys = Object.keys(this._rollbacks).sort();
+        var i = keys.length;
+        while (i--) {
+            var id = keys[i];
+            var rb = this._rollbacks[id];
+            var tmp = {};
+            tmp.id = id;
+            tmp.timestamp = rb.timestamp;
+            tmp.count = rb.rollbacks.length;
+            tmp.templates = rb.rollbacks.map(function (r) { return r.template; });
+            result[id] = tmp;
+        }
+        return result;
+    };
+    /**
+     * Save Rollbacks
+     * Writes current rollbacks to file.
+     *
+     * @param prune when false prevents pruning rollbacks before save.
+     */
+    Mustr.prototype.saveRollbacks = function (prune) {
+        var keys = lodash_1.keys(this._rollbacks).sort();
+        var removeCount = this.options.maxRollbacks === 0 ? 0 : keys.length - this.options.maxRollbacks;
+        // Check if should prune previous
+        // rollbacks.
+        if (removeCount > 0 && prune !== false)
+            return this.removeRollbacks(removeCount);
+        fs_extra_1.writeFileSync(this._rollbacksPath, JSON.stringify(this._rollbacks, null, 2));
+        return this;
+    };
     /**
      * Init
      * Initializes Mustr for current project
@@ -274,8 +475,8 @@ var Mustr = (function (_super) {
      * @param force when true forces init.
      */
     Mustr.prototype.init = function (force) {
-        var configPath = path_1.resolve(this.cwd, 'mustr.json');
-        var blueprintsPath = path_1.resolve(this.cwd, 'mustr');
+        var configPath = path_1.resolve('mustr.json');
+        var blueprintsPath = path_1.resolve('mustr');
         // Engine and renderer can only be passed
         // when manually initializing Mustr instance.
         var _defaults = lodash_1.clone(defaults);
@@ -298,14 +499,17 @@ var Mustr = (function (_super) {
         var _this = this;
         if (this.loaded)
             return this;
-        if (!fs_extra_1.existsSync(this.registerPath)) {
-            this.log.warn("failed to resolve register configuration at " + this.registerPath + ", need to run \"mu init\"?");
+        var resolvedPath = path_1.relative(this.cwd, this._registerPath);
+        if (!fs_extra_1.existsSync(this._registerPath)) {
+            if (!fs_extra_1.existsSync(this._configPath))
+                return this;
+            this.log.warn("unable to resolve register at " + resolvedPath + ", if init you can ignore this.");
             return this;
         }
         // Load template paths..
-        this.templatesGlob = glob.sync(this.templatesPath);
+        this._templatesGlob = glob.sync(this._templatesPath);
         // Require the config
-        var config = this.tryRequire(this.registerPath);
+        var config = this.tryRequire(this._registerPath);
         if (this.options.maxRollbacks > 0)
             this.loadRollbacks();
         if (!lodash_1.isFunction(config)) {
@@ -315,7 +519,7 @@ var Mustr = (function (_super) {
         // Auto Register if set
         // call before config.
         if (this.options.autoRegister) {
-            this.templatesGlob.forEach(function (k) {
+            this._templatesGlob.forEach(function (k) {
                 var parsed = path_1.parse(k);
                 _this.register(parsed.name);
             });
@@ -366,7 +570,7 @@ var Mustr = (function (_super) {
         var optsMeta = options.metadata || {};
         delete options.metadata;
         var optsConfig = options;
-        var template = this.templates[name];
+        var template = this._templates[name];
         // Ensure the template exists.
         if (!template)
             this.log.error("the template " + name + " could not be found.").exit();
@@ -413,7 +617,7 @@ var Mustr = (function (_super) {
         // be relative to the output dir specified
         // or current working directory.
         // otherwise relative to output path.
-        template.outputDir = template.outputPath ? template.outputDir || this.cwd : template.outputDir || this.outputPath;
+        template.outputDir = template.outputPath ? template.outputDir || this.cwd : template.outputDir || this._outputPath;
         template.metadata.$component = {};
         // static output path.
         if (template.outputPath) {
@@ -522,11 +726,11 @@ var Mustr = (function (_super) {
         partials = tmpPartials || parsed.partials;
         beforeRender = parsed.beforeRender;
         afterRender = parsed.afterRender;
-        if (this.components[name]) {
+        if (this._components[name]) {
             this.log.warn("sorry about that we can't use " + name + " it's already used as a component name.");
             return;
         }
-        _template = this.templates[name] = parsed;
+        _template = this._templates[name] = parsed;
         beforeRender = function (before) {
             _template.beforeRender = before;
             return methods;
@@ -590,21 +794,21 @@ var Mustr = (function (_super) {
         // Make sure templates is flatten first
         // element may have all the template names.
         templates = lodash_1.flatten(templates);
-        if (this.templates[name]) {
+        if (this._templates[name]) {
             this.log.warn("sorry about that we can't use " + name + " it's already used as a template name.");
             return this;
         }
         // Ensure templates exist.
         templates = templates.filter(function (t) {
-            if (!_this.templates[t])
+            if (!_this._templates[t])
                 _this.log.warn("the template " + t + " has been excluded from component " + name + ", the template could not be found.");
-            return _this.templates[t];
+            return _this._templates[t];
         });
         if (!templates || !templates.length) {
             this.log.warn("whoops cannot register component " + name + " without any templates.");
             return this;
         }
-        this.components[name] = {
+        this._components[name] = {
             name: name,
             templates: templates
         };
@@ -659,14 +863,14 @@ var Mustr = (function (_super) {
             name = this.normalizeName(name);
         }
         // Check if is component.
-        if (lodash_1.isString(name) && this.components[name]) {
+        if (lodash_1.isString(name) && this._components[name]) {
             // Groups cannot have extension in output.
             if (lodash_1.isString(output) && /\.[a-zA-Z0-9]{2,5}$/.test(output))
                 return this.log.error('component output paths cannot contain extentions.');
             // if (!_isString(output))
             //   return this.log.error('configuration object supported only as third arguemnt for components, use <name> [output] [RegisterConfig].');
             // If a component iterate each template and output.
-            var component_1 = this.components[name];
+            var component_1 = this._components[name];
             var ctr_1 = 0;
             var i = component_1.templates.length;
             var groupId = Date.now() + '-' + name;
@@ -693,7 +897,7 @@ var Mustr = (function (_super) {
         }
         else {
             // Ensure we have some templates loaded.
-            if (!Object.keys(this.templates).length)
+            if (!Object.keys(this._templates).length)
                 return this.log.warn('whoops you no templates registed, add some templates in "register.js"');
             if (lodash_1.isFunction(output)) {
                 done = output;
@@ -765,7 +969,7 @@ var Mustr = (function (_super) {
             template.metadata.$component.paths = template.metadata.$component.paths || [];
             // Parse the output path.
             var parsedTemplateOutput_1 = path_1.parse(template.outputPath);
-            var parsedOutput = path_1.parse(this.outputPath);
+            var parsedOutput = path_1.parse(this._outputPath);
             // Ensure the directory structure exists.
             fs_extra_1.ensureDirSync(parsedTemplateOutput_1.dir);
             var injects_1 = [];
@@ -789,8 +993,8 @@ var Mustr = (function (_super) {
                 // Ensure from and to then resolve each.
                 from = fromHasPath ? template.outputPath : from;
                 to = toHasPath ? template.outputPath : to;
-                from = path_1.resolve(_this.outputPath, from);
-                to = path_1.resolve(_this.outputPath, to);
+                from = path_1.resolve(_this._outputPath, from);
+                to = path_1.resolve(_this._outputPath, to);
                 var parsedIns = path_1.parse(from);
                 var tmpRel = path_1.relative(parsedIns.dir, to);
                 var parsedTmpRel = path_1.parse(tmpRel);
@@ -812,12 +1016,12 @@ var Mustr = (function (_super) {
                     inj.filename = template.outputPath;
                     inj.relative = false;
                 }
-                var resolvedInject = path_1.resolve(_this.outputPath, inj.filename);
+                var resolvedInject = path_1.resolve(_this._outputPath, inj.filename);
                 // Check if inject filename is relative to
                 // the output path being generated.
                 if (inj.relative) {
                     resolvedInject = path_1.resolve(parsedTemplateOutput_1.dir, inj.filename);
-                    inj.filename = path_1.relative(_this.outputPath, resolvedInject);
+                    inj.filename = path_1.relative(_this._outputPath, resolvedInject);
                 }
                 // Store the rollback to filename.
                 injRollback.rollbackTo = resolvedInject.replace(_this.cwd, '').replace(/^\//, '');
@@ -954,9 +1158,9 @@ var Mustr = (function (_super) {
             return to;
         }
         // Resolve the filename.
-        filename = path_1.resolve(this.outputPath, filename);
+        filename = path_1.resolve(this._outputPath, filename);
         if (!fs_extra_1.existsSync(filename))
-            return done(new Error("failed to inject in " + path_1.relative(this.outputPath, filename) + ", file not found."));
+            return done(new Error("failed to inject in " + path_1.relative(this._outputPath, filename) + ", file not found."));
         exp = find;
         // If is string convert to expression.
         if (lodash_1.isString(exp))
@@ -1024,29 +1228,8 @@ var Mustr = (function (_super) {
             });
         });
     };
+    // Rollbacks //
     /**
-  <<<<<<< HEAD
-     * Add Rollback
-     * Adds a rollback to the collection.
-     *
-     * @param id the id of the rollback to add.
-     * @param rollback the rollback object.
-     */
-    Mustr.prototype.addRollback = function (id, rollback) {
-        if (this.options.maxRollbacks === 0)
-            return;
-        // Ensure id doesn't contain dots.
-        id = id.replace(/\./g, '-');
-        var rb = this.rollbacks[id] = this.rollbacks[id] || {};
-        if (!rb.timestamp)
-            rb.timestamp = (new Date()).toISOString();
-        rb.rollbacks = rb.rollbacks || [];
-        rb.rollbacks.push(rollback);
-        return rollback;
-    };
-    /**
-  =======
-  >>>>>>> e84e5d6fa7349a3ef659cf87d77e5a743065516b
      * Rollback
      * Rolls back and removes generated templates.
      *
@@ -1064,8 +1247,16 @@ var Mustr = (function (_super) {
         // Check if is rollback id.
         var isRollbackId = this.rollbackIdExp.test(name);
         // Check if no id, if true get last.
-        if (lodash_1.isUndefined(name)) {
-            name = lodash_1.keys(this.rollbacks).sort().pop();
+        if (lodash_1.isUndefined(name) || name === null) {
+            var rollKeys = lodash_1.keys(this._rollbacks);
+            if (!rollKeys.length) {
+                this.log
+                    .write()
+                    .warn('attempted to rollback but none were found.')
+                    .write();
+                return;
+            }
+            name = rollKeys.sort().pop();
             isRollbackId = true;
         }
         var finish = function () {
@@ -1090,7 +1281,7 @@ var Mustr = (function (_super) {
             // Rollbacks by id are always groups.
             isGroup = true;
             // Get the rollback.
-            var rb = this.rollbacks[name];
+            var rb = this._rollbacks[name];
             if (!rb) {
                 this.log.error('cannot rollback using rollback instance of undefined.');
                 return this;
@@ -1098,10 +1289,10 @@ var Mustr = (function (_super) {
             var i = rb.rollbacks.length;
             while (i--) {
                 var rollback = rb.rollbacks[i];
-                var to = path_1.resolve(this.cwd, rollback.rollbackTo);
+                var to = path_1.resolve(rollback.rollbackTo);
                 // If from copy from backed up file.
                 if (rollback.rollbackFrom) {
-                    var from = path_1.resolve(this.cwd, rollback.rollbackFrom);
+                    var from = path_1.resolve(rollback.rollbackFrom);
                     try {
                         fs_extra_1.copySync(from, to);
                         success++;
@@ -1127,8 +1318,8 @@ var Mustr = (function (_super) {
         else {
             name = name.toLowerCase().replace(this.tplexp, '');
             // Check if name is a component of templates.
-            if (this.components[name]) {
-                var comps = this.components[name];
+            if (this._components[name]) {
+                var comps = this._components[name];
                 isGroup = true;
                 var i_1 = comps.templates.length;
                 while (i_1--) {
@@ -1158,181 +1349,20 @@ var Mustr = (function (_super) {
         }
         return this;
     };
-    /**
-     * Remove Rollbacks
-     * Removes previous rollbacks before Date
-     * by Date string a count of rollbacks to
-     * be removed or by rollbackId. When a number
-     * is provided the first of number provided
-     * will be removed. The last rollback is
-     * always preserved.
-     *
-     * @param by the date string or number of rollbacks to remove.
-     * @param save when false changes are not saved to file.
-     */
-    Mustr.prototype.removeRollbacks = function (by, save) {
-        var _this = this;
-        var date;
-        var count = 0;
-        var rollbackId;
-        // Internal helper removes by key
-        // checks if rollbacks folder exists
-        // if yes unlinks/deletes it.
-        var removeByKey = function (key) {
-            // Delete from collection.
-            delete _this.rollbacks[key];
-            // If folder exists remove rollbacks folder.
-            var rollbackPath = path_1.join(_this.options.configDir, _this.rollbacksDir, key);
-            // If path exists remove.
-            if (fs_extra_1.existsSync(rollbackPath))
-                fs_extra_1.removeSync(rollbackPath);
-            // Check if should save rollback changes.
-            if (save !== false)
-                _this.saveRollbacks();
-        };
-        // Check if is rollback id or
-        // string to be converted to date.
-        if (lodash_1.isString(by)) {
-            if (this.rollbackIdExp.test(by))
-                rollbackId = by;
-            else
-                date = new Date(by);
-        }
-        else if (lodash_1.isNumber(by))
-            count = by;
-        else if (by instanceof Date)
-            date = by;
-        else
-            this.log.error("unsupported typeof " + typeof by + " detected.");
-        var keys = lodash_1.keys(this.rollbacks).sort();
-        // Ensure count is no more than one
-        // less than the lenght of keys.
-        if (count >= keys.length)
-            count = keys.length - 1;
-        // Delete by id.
-        if (rollbackId) {
-            removeByKey(rollbackId);
-        }
-        else if (count > 0) {
-            var ctr = 0;
-            while (ctr < count) {
-                var key = keys[ctr];
-                removeByKey(key);
-                ctr++;
-            }
-        }
-        else if (date) {
-            var filterDate_1 = date.getTime();
-            keys.forEach(function (k, i) {
-                if ((i + 1) >= keys.length)
-                    return;
-                var ts = Number(k.split('-')[0]);
-                if (ts < filterDate_1) {
-                    removeByKey(k);
-                }
-            });
-        }
-        else {
-            this.log.warn("0 rollbacks removed, unsupported type " + typeof by + " or no unmatched criteria.");
-        }
-        return this;
-    };
-    /**
-     * Reindex Rollbacks
-     * Iterates rollbacks.json re-sorts order
-     * optionally prunes records where rollback
-     * files are missing.
-     *
-     * @param prune when true prunes entries where missing required rollback folder/files.
-     */
-    Mustr.prototype.reindexRollbacks = function (prune) {
-        var _this = this;
-        var keys = lodash_1.keys(this.rollbacks).sort();
-        var dirs = this.getDirs(path_1.resolve(this.options.configDir, this.rollbacksDir));
-        var tmp = {};
-        // If directories ensure matching
-        // keys in rollbacks.json.
-        if (prune !== false) {
-            dirs.forEach(function (d) {
-                // If key doesn't exist remove dir.
-                if (keys.indexOf(d) === -1)
-                    fs_extra_1.removeSync(path_1.resolve(_this.options.configDir, _this.rollbacksDir, d));
-            });
-        }
-        // Iterate keys and ensure rollbacks
-        // contain value paths etc.
-        keys.forEach(function (k) {
-            var rb = _this.rollbacks[k];
-            var i = rb.rollbacks.length;
-            // Check if should prune.
-            if (prune !== false) {
-                while (i--) {
-                    var r = rb.rollbacks[i];
-                    if (r.rollbackFrom && !fs_extra_1.existsSync(r.rollbackFrom))
-                        delete rb.rollbacks[i];
-                }
-                // If we still have rollbacks then add
-                // to the temp object.
-                if (rb.rollbacks && rb.rollbacks.length)
-                    tmp[k] = rb;
-            }
-            else {
-                tmp[k] = rb;
-            }
-        });
-        // Update to reindex object.
-        this.rollbacks = tmp;
-        return this;
-    };
-    /**
-     * Load Rollbacks
-     * Loads the rollbacks config file.
-     */
-    Mustr.prototype.loadRollbacks = function (reindex) {
-        this.rollbacks = this.tryRequire(this.rollbacksPath);
-        if (reindex)
-            this.reindexRollbacks();
-        return this;
-    };
-    /**
-     * Show Rollbacks
-     * Shows details/stats for recoreded rollbacks.
-     *
-     * @param display when false will NOT display stats in console.
-     */
-    Mustr.prototype.getRollbacks = function () {
-        var obj = this.rollbacks;
-        var result = {};
-        var keys = Object.keys(this.rollbacks).sort();
-        var i = keys.length;
-        while (i--) {
-            var id = keys[i];
-            var rb = this.rollbacks[id];
-            var tmp = {};
-            tmp.id = id;
-            tmp.timestamp = rb.timestamp;
-            tmp.count = rb.rollbacks.length;
-            tmp.templates = rb.rollbacks.map(function (r) { return r.template; });
-            result[id] = tmp;
-        }
-        return result;
-    };
-    /**
-     * Save Rollbacks
-     * Writes current rollbacks to file.
-     *
-     * @param prune when false prevents pruning rollbacks before save.
-     */
-    Mustr.prototype.saveRollbacks = function (prune) {
-        var keys = lodash_1.keys(this.rollbacks).sort();
-        var removeCount = this.options.maxRollbacks === 0 ? 0 : keys.length - this.options.maxRollbacks;
-        // Check if should prune previous
-        // rollbacks.
-        if (removeCount > 0 && prune !== false)
-            return this.removeRollbacks(removeCount);
-        fs_extra_1.writeFileSync(this.rollbacksPath, JSON.stringify(this.rollbacks, null, 2));
-        return this;
-    };
+    Object.defineProperty(Mustr.prototype, "rollbacks", {
+        get: function () {
+            return {
+                get: this.getRollbacks.bind(this),
+                add: this.addRollback.bind(this),
+                reindex: this.reindexRollbacks.bind(this),
+                save: this.saveRollbacks.bind(this),
+                remove: this.removeRollbacks.bind(this)
+            };
+        },
+        enumerable: true,
+        configurable: true
+    });
+    // Utils //
     /**
      * Transform To
      * Transforms a string to the desired casing.
@@ -1357,7 +1387,7 @@ var Mustr = (function (_super) {
         caseMap.titleCase = caseMap.title;
         to = to.trim();
         if (lodash_1.isUndefined(caseMap[to])) {
-            this.log.warn("invalid transform case " + to + " (" + chalk.cyan(validTypes.join(', ')) + ").");
+            this.log.warn("invalid transform case " + to + " (" + this.colurs.cyan(validTypes.join(', ')) + ").");
             return str;
         }
         var splitStr = str.split('.');
