@@ -64,27 +64,21 @@ function rollback(name, output, parsed, cmd) {
 // Handler for show
 function show(type, parsed, cmd) {
     ensureConfig();
+    var layoutWidth = 80;
+    var layout = pargv.layout(layoutWidth);
+    var padBtm = [0, 0, 1, 0];
     function showRollbacks() {
         var rollbacks = mu.rollbacks.get();
         var keys = Object.keys(rollbacks);
-        var padBtm = [0, 0, 1, 0];
-        var layoutWidth = 80;
-        var layout = pargv.layout(layoutWidth);
         var i = keys.length;
         var col1w = Math.floor(layoutWidth * .10);
-        // const col4w = col1w;
         var col2w = Math.floor(layoutWidth * .50);
-        // const col3w = Math.floor(layoutWidth * .25);
-        var col5w = layoutWidth - (col1w + col2w);
+        var col3w = layoutWidth - (col1w + col2w);
         var hdrNo = { text: colurs.underline.gray('No.'), with: col1w };
         var hdrId = { text: "" + colurs.underline.gray('ID'), width: col2w };
-        // const hdrTpl = { text: `${colurs.underline.gray('Templates')}`, width: col3w };
-        // const hdrCt = { text: `${colurs.underline.gray('Count')}`, width: col4w };
-        var hdrTs = { text: "" + colurs.underline.gray('Timestamp'), width: col5w, align: 'center' };
-        layout.div({ text: colurs.blue('Rollbacks') + colurs.gray(' (current rollbacks)'), padding: [1, 0, 1, 0] });
+        var hdrTs = { text: "" + colurs.underline.gray('Timestamp'), width: col3w, align: 'center' };
+        layout.div({ text: colurs.yellow('Rollbacks') + colurs.gray(' (current rollbacks)'), padding: [1, 0, 1, 0] });
         if (keys.length) {
-            // layout.div(hdrNo, hdrId, hdrTpl, hdrCt, hdrTs); // create header.
-            // layout.div(hdrNo, hdrId, hdrTpl, hdrTs); // create header.
             layout.div(hdrNo, hdrId, hdrTs); // create header.
             layout.repeat('-', null, padBtm);
         }
@@ -92,13 +86,9 @@ function show(type, parsed, cmd) {
             var key = keys[i];
             var rb = rollbacks[key];
             var no = { text: i + 1 + ")", width: col1w };
-            var id = { text: "" + colurs.cyan(rb.id), width: col2w };
-            // const tpl = { text: `${colurs.gray(rb.templates.join(', '))}`, width: col3w };
+            var id = { text: colurs.cyan(rb.id) + " " + colurs.gray('(' + (rb.count || '0') + ')'), width: col2w };
             var tpl = { text: "" + colurs.gray(rb.templates.join(', ')) };
-            // const ct = { text: `${colurs.yellow(rb.count + '')}`, width: col4w };
-            var ts = { text: "" + colurs.magenta(rb.timestamp), width: col5w, align: 'center' };
-            // layout.div(no, id, tpl, ct, ts); // output line.
-            // layout.div(no, id, tpl, ts); // output line.
+            var ts = { text: "" + colurs.magenta(rb.timestamp), width: col3w, align: 'center' };
             layout.div(no, id, ts); // output line.
             layout.div({ text: '', width: col1w }, tpl);
         }
@@ -110,8 +100,92 @@ function show(type, parsed, cmd) {
         layout.show(); // output the layout.
         console.log();
     }
+    function showPaths() {
+        var paths = mu.templates.paths();
+        var i = 0;
+        var hdrPath = { text: "" + colurs.underline.gray('Path') };
+        layout.div({ text: colurs.yellow('Paths') + colurs.gray(' (template paths)'), padding: [1, 0, 1, 0] });
+        if (paths.length) {
+            layout.repeat('-', null, padBtm);
+        }
+        while (i < paths.length) {
+            var p = paths[i];
+            var path = { text: "" + colurs.cyan(p) };
+            layout.div(path);
+            i++;
+        }
+        if (!paths.length) {
+            layout
+                .div(colurs.italic.gray('0 records found.'))
+                .div('');
+        }
+        layout.show();
+        console.log();
+    }
+    function showTemplates() {
+        var comps = mu.templates.get();
+        var keys = Object.keys(comps);
+        var i = 0;
+        var col1w = 20;
+        var hdrName = { text: colurs.underline.gray('Template'), width: col1w };
+        var hdrTpls = { text: "" + colurs.underline.gray('Includes') };
+        layout.div({ text: colurs.blue('Components') + colurs.gray(' (component templates)'), padding: [1, 0, 1, 0] });
+        if (keys.length) {
+            layout.div(hdrName, hdrTpls); // create header.
+            layout.repeat('-', null, padBtm);
+        }
+        while (i < keys.length) {
+            var key = keys[i];
+            var templates = comps[key].templates || [];
+            var name = { text: colurs.cyan(key), width: col1w };
+            var tpls = { text: colurs.gray(templates.join(', ')) };
+            layout.div(name, tpls);
+            i++;
+        }
+        if (!keys.length) {
+            layout
+                .div(colurs.italic.gray('0 records found.'))
+                .div('');
+        }
+        layout.show();
+        console.log();
+    }
+    function showCompnents() {
+        var comps = mu.templates.components();
+        var keys = Object.keys(comps);
+        var i = 0;
+        var col1w = 20;
+        var hdrName = { text: colurs.underline.gray('Component'), width: col1w };
+        var hdrTpls = { text: "" + colurs.underline.gray('Includes') };
+        layout.div({ text: colurs.blue('Components') + colurs.gray(' (component templates)'), padding: [1, 0, 1, 0] });
+        if (keys.length) {
+            layout.div(hdrName, hdrTpls); // create header.
+            layout.repeat('-', null, padBtm);
+        }
+        while (i < keys.length) {
+            var key = keys[i];
+            var templates = comps[key].templates || [];
+            var name = { text: colurs.cyan(key), width: col1w };
+            var tpls = { text: colurs.gray(templates.join(', ')) };
+            layout.div(name, tpls);
+            i++;
+        }
+        if (!keys.length) {
+            layout
+                .div(colurs.italic.gray('0 records found.'))
+                .div('');
+        }
+        layout.show();
+        console.log();
+    }
     if (lodash_1.includes(['r', 'rollbacks'], type)) {
         showRollbacks();
+    }
+    else if (lodash_1.includes(['p', 'paths'], type)) {
+        showPaths();
+    }
+    else if (lodash_1.includes(['c', 'components'], type)) {
+        showCompnents();
     }
 }
 pargv

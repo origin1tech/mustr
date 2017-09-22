@@ -145,7 +145,7 @@ export interface IMustr {
   _registerPath: string;
   _templatesPath: string;
   _outputPath: string;
-  _templatesGlob: string[];
+  _templatesGlobs: string[];
   _templates: IMap<ITemplate>;
   _components: IMap<IComponent>;
 

@@ -137,7 +137,7 @@ var Mustr = (function (_super) {
             templatePath = template;
         }
         else if (!this.hasMatter(template) && !this.hasTemplate(template)) {
-            var filtered = this._templatesGlob.filter(function (t) {
+            var filtered = this._templatesGlobs.filter(function (t) {
                 return path_1.parse(t).name === template;
             })[0];
             if (!filtered) {
@@ -272,6 +272,42 @@ var Mustr = (function (_super) {
             return [];
         return fs_extra_1.readdirSync(dir)
             .filter(function (f) { return fs_extra_1.statSync(path_1.join(dir, f)).isDirectory(); });
+    };
+    // Private Templates //
+    /**
+     * Paths
+     * : Get array of known template paths.
+     */
+    Mustr.prototype.getTemplatePaths = function () {
+        return this._templatesGlobs;
+    };
+    /**
+     * Get
+     * : Get an object of all loaded templates.
+     */
+    Mustr.prototype.getTemplates = function () {
+        return this._templates;
+    };
+    /**
+     * Components
+     * : Gets object of components.
+     */
+    Mustr.prototype.getComponents = function () {
+        return this._components;
+    };
+    /**
+     * Get Template Component
+     *
+     * @param template the template to find in component.
+     */
+    Mustr.prototype.getTemplateComponent = function (template) {
+        var includes = [];
+        for (var k in this._components) {
+            var tpls = this._components[k].templates || [];
+            if (~tpls.indexOf(template))
+                includes.push(k);
+        }
+        return includes;
     };
     // Private Rollbacks //
     /**
@@ -507,7 +543,7 @@ var Mustr = (function (_super) {
             return this;
         }
         // Load template paths..
-        this._templatesGlob = glob.sync(this._templatesPath);
+        this._templatesGlobs = glob.sync(this._templatesPath);
         // Require the config
         var config = this.tryRequire(this._registerPath);
         if (this.options.maxRollbacks > 0)
@@ -519,7 +555,7 @@ var Mustr = (function (_super) {
         // Auto Register if set
         // call before config.
         if (this.options.autoRegister) {
-            this._templatesGlob.forEach(function (k) {
+            this._templatesGlobs.forEach(function (k) {
                 var parsed = path_1.parse(k);
                 _this.register(parsed.name);
             });
@@ -825,6 +861,7 @@ var Mustr = (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
+        this.log.warn('DEPRECATED use .registerComponent(), registerGroup removed in next minor version.');
         return this.registerComponent.apply(this, args);
     };
     /**
@@ -1228,6 +1265,18 @@ var Mustr = (function (_super) {
             });
         });
     };
+    Object.defineProperty(Mustr.prototype, "templates", {
+        // Templates //
+        get: function () {
+            return {
+                get: this.getTemplates.bind(this),
+                components: this.getComponents.bind(this),
+                paths: this.getTemplatePaths.bind(this)
+            };
+        },
+        enumerable: true,
+        configurable: true
+    });
     // Rollbacks //
     /**
      * Rollback

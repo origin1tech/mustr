@@ -69,7 +69,7 @@ export class Mustr extends EventEmitter implements IMustr {
   _rollbacksPath: string;
 
   // Array of template paths.
-  _templatesGlob: string[];
+  _templatesGlobs: string[];
 
   // Parsed templates.
   _templates: IMap<ITemplate> = {};
@@ -204,7 +204,7 @@ export class Mustr extends EventEmitter implements IMustr {
     // lookup from loaded template paths and read.
     else if (!this.hasMatter(template) && !this.hasTemplate(template)) {
 
-      const filtered = this._templatesGlob.filter((t) => {
+      const filtered = this._templatesGlobs.filter((t) => {
         return parse(t).name === template;
       })[0];
 
@@ -377,6 +377,48 @@ export class Mustr extends EventEmitter implements IMustr {
       return [];
     return readdirSync(dir)
       .filter(f => statSync(join(dir, f)).isDirectory());
+  }
+
+  // Private Templates //
+
+  /**
+   * Paths
+   * : Get array of known template paths.
+   */
+  private getTemplatePaths() {
+    return this._templatesGlobs;
+  }
+
+  /**
+   * Get
+   * : Get an object of all loaded templates.
+   */
+  private getTemplates() {
+    return this._templates;
+  }
+
+  /**
+   * Components
+   * : Gets object of components.
+   */
+  private getComponents() {
+    return this._components;
+
+  }
+
+  /**
+   * Get Template Component
+   *
+   * @param template the template to find in component.
+   */
+  private getTemplateComponent(template: string) {
+    const includes = [];
+    for (const k in this._components) {
+      const tpls = this._components[k].templates || [];
+      if (~tpls.indexOf(template))
+        includes.push(k);
+    }
+    return includes;
   }
 
   // Private Rollbacks //
@@ -641,7 +683,6 @@ export class Mustr extends EventEmitter implements IMustr {
 
   }
 
-
   /**
    * Init
    * Initializes Mustr for current project
@@ -692,7 +733,7 @@ export class Mustr extends EventEmitter implements IMustr {
     }
 
     // Load template paths..
-    this._templatesGlob = glob.sync(this._templatesPath);
+    this._templatesGlobs = glob.sync(this._templatesPath);
 
     // Require the config
     const config = this.tryRequire(this._registerPath);
@@ -708,7 +749,7 @@ export class Mustr extends EventEmitter implements IMustr {
     // Auto Register if set
     // call before config.
     if (this.options.autoRegister) {
-      this._templatesGlob.forEach((k) => {
+      this._templatesGlobs.forEach((k) => {
         const parsed = parse(k);
         this.register(parsed.name);
       });
@@ -1088,6 +1129,7 @@ export class Mustr extends EventEmitter implements IMustr {
    * @param args arguments for registerComponent.
    */
   registerGroup(...args: any[]): IMustr {
+    this.log.warn('DEPRECATED use .registerComponent(), registerGroup removed in next minor version.');
     return this.registerComponent.apply(this, args);
   }
 
@@ -1658,6 +1700,20 @@ export class Mustr extends EventEmitter implements IMustr {
       });
 
     });
+
+  }
+
+  // Templates //
+
+  get templates() {
+
+    return {
+
+      get: this.getTemplates.bind(this),
+      components: this.getComponents.bind(this),
+      paths: this.getTemplatePaths.bind(this)
+
+    };
 
   }
 

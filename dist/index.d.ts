@@ -18,7 +18,7 @@ export declare class Mustr extends EventEmitter implements IMustr {
     _templatesPath: string;
     _outputPath: string;
     _rollbacksPath: string;
-    _templatesGlob: string[];
+    _templatesGlobs: string[];
     _templates: IMap<ITemplate>;
     _components: IMap<IComponent>;
     _rollbacks: IMap<IRollbackContainer>;
@@ -97,6 +97,27 @@ export declare class Mustr extends EventEmitter implements IMustr {
      * @param dir base directory to get all sub directories from.
      */
     private getDirs(dir);
+    /**
+     * Paths
+     * : Get array of known template paths.
+     */
+    private getTemplatePaths();
+    /**
+     * Get
+     * : Get an object of all loaded templates.
+     */
+    private getTemplates();
+    /**
+     * Components
+     * : Gets object of components.
+     */
+    private getComponents();
+    /**
+     * Get Template Component
+     *
+     * @param template the template to find in component.
+     */
+    private getTemplateComponent(template);
     /**
      * Add Rollback
      * Adds a rollback to the collection.
@@ -230,6 +251,11 @@ export declare class Mustr extends EventEmitter implements IMustr {
      * @param done the callback on file written.
      */
     inject(filename: string | IInject, find?: string | RegExp | NodeCallback, strategy?: 'before' | 'after' | 'first' | 'last' | 'replace', insert?: string | string[], done?: NodeCallback): void;
+    readonly templates: {
+        get: any;
+        components: any;
+        paths: any;
+    };
     /**
      * Rollback
      * Rolls back and removes generated templates.
