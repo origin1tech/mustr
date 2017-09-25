@@ -34,7 +34,7 @@
     "url": "git+https://github.com/origin1tech/mustr.git"
   },
   "keywords": [
-    "Yoeman",
+    "Yeoman",
     "Slush",
     "Mustr",
     "Generator"
@@ -46,31 +46,31 @@
   },
   "homepage": "https://github.com/origin1tech/mustr#readme",
   "dependencies": {
-    "async": "^2.3.0",
+    "chek": "^1.0.27",
     "colurs": "^1.0.12",
-    "detect-indent": "^5.0.0",
-    "front-matter": "^2.1.2",
-    "fs-extra": "^2.1.2",
-    "glob": "^7.1.1",
-    "lodash": "^4.17.4",
-    "mustache": "^2.3.0",
+    "globby": "^6.1.0",
+    "multimatch": "^2.1.0",
     "pargv": "^2.0.6",
-    "timbr": "^1.0.1"
+    "through2": "^2.0.3",
+    "timbr": "^1.0.1",
+    "vinyl": "^2.1.0",
+    "vinyl-file": "^3.0.0"
   },
   "devDependencies": {
     "@types/async": "^2.0.40",
     "@types/chai": "^3.5.0",
-    "@types/fs-extra": "^2.1.0",
+    "@types/globby": "^6.1.0",
     "@types/lodash": "^4.14.61",
     "@types/mocha": "^2.2.40",
-    "@types/mustache": "^0.8.29",
+    "@types/multimatch": "^2.1.1",
     "@types/node": "^7.0.12",
+    "@types/through2": "^2.0.33",
+    "@types/vinyl": "^2.0.1",
     "chai": "^3.5.0",
-    "del": "^2.2.2",
     "mocha": "^3.2.0",
     "stiks": "^1.0.14",
     "ts-node": "^3.0.2",
     "typedoc": "^0.5.10",
-    "typescript": "^2.2.2"
+    "typescript": "^2.5.0"
   }
 }
