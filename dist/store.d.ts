@@ -1,5 +1,7 @@
+/// <reference types="node" />
 import { MustrBase } from './base';
-import { IMustrOptions } from './interfaces';
+import { Transform } from 'stream';
+import { IMustrOptions, VinylFile } from './interfaces';
 export declare class MustrStore extends MustrBase {
     private cwd;
     private _store;
@@ -17,28 +19,25 @@ export declare class MustrStore extends MustrBase {
      *
      * @param path the path to get.
      */
-    private get(path);
+    protected get(path: string): VinylFile;
     /**
      * Set
      * : Set a file in the store.
      * @param file the file to save.
      */
-    private set(file);
+    protected set(file: VinylFile): this;
     /**
      * Each
      * : Iterator for stream.
      *
      * @param writer function for writing eack key and index.
      */
-    private each(writer);
+    protected each(writer: {
+        (file?: VinylFile, index?: any): void;
+    }): this;
     /**
      * Stream
      * : Streams calling iterator for each file in store.
      */
-    private stream();
-    readonly store: {
-        get: any;
-        set: any;
-        each: any;
-    };
+    protected stream(): Transform;
 }

@@ -41,9 +41,10 @@ export class ErrorExtended {
       meta = undefined;
     }
 
+    const constructName = this.constructor['name'];
     this.message = message;
     this.meta = <IMap<any>>meta;
-    this.name = <string>name || this.constructor.name;
+    this.name = <string>name || constructName;
     this.stacktrace = this.prune(<number>prune);
     this.stackframes = this.parse();
     this.stack = this.stacktrace.join(EOL);
@@ -111,18 +112,12 @@ export class ErrorExtended {
 
         if (methStart > 0) {
 
-          // object = functionName.substr(0, methodStart);
-          // method = functionName.substr(methodStart + 1);
-
           obj = functionName.slice(0, methStart);
           method = functionName.slice(methStart + 1);
 
           let objEnd = obj.indexOf('.Module');
 
           if (objEnd > 0) {
-            // functionName = functionName.substr(objectEnd + 1);
-            // obj = obj.substr(0, objectEnd);
-
             functionName = functionName.slice(objEnd + 1);
             obj = obj.slice(0, objEnd);
           }

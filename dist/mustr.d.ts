@@ -1,5 +1,5 @@
 import { IMustrOptions } from './interfaces';
-import { MustrFileSys } from './fs';
-export declare class Mustr extends MustrFileSys {
+import { MustrBase } from './base';
+export declare class Mustr extends MustrBase {
     constructor(options?: IMustrOptions);
 }

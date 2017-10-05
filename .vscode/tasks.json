@@ -9,7 +9,7 @@
 				"command": "tsc",
 				"args": [
 					"-p",
-					"${workspaceRoot}\\src\\tsconfig.json"
+					"${workspaceRootFolderName}\\src\\tsconfig.json"
 				]
 			},
 			"osx": {
@@ -42,7 +42,7 @@
 				"command": "tsc",
 				"args": [
 					"-p",
-					"${workspaceRoot}\\src\\tsconfig.json",
+					"${workspaceRootFolderName}\\src\\tsconfig.json",
 					"-w"
 				]
 			},

@@ -10,13 +10,13 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var fs_1 = require("./fs");
+var base_1 = require("./base");
 var Mustr = (function (_super) {
     __extends(Mustr, _super);
     function Mustr(options) {
         return _super.call(this, options) || this;
     }
     return Mustr;
-}(fs_1.MustrFileSys));
+}(base_1.MustrBase));
 exports.Mustr = Mustr;
 //# sourceMappingURL=mustr.js.map

@@ -10,9 +10,3 @@ Minimalistic scaffolding tool using Mustache Templates with handy rollback featu
 ## License
 
 See [LICENSE](License)
-
-
-
-
-
-

@@ -62,7 +62,7 @@ var MustrStore = (function (_super) {
      */
     MustrStore.prototype.set = function (file) {
         this._store[file.path] = file;
-        this.emit('change');
+        this.emit('change', file, this);
         return this;
     };
     /**
@@ -91,17 +91,6 @@ var MustrStore = (function (_super) {
         });
         return stream;
     };
-    Object.defineProperty(MustrStore.prototype, "store", {
-        get: function () {
-            return {
-                get: this.get.bind(this),
-                set: this.set.bind(this),
-                each: this.each.bind(this)
-            };
-        },
-        enumerable: true,
-        configurable: true
-    });
     return MustrStore;
 }(base_1.MustrBase));
 exports.MustrStore = MustrStore;

@@ -10,13 +10,17 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var store_1 = require("./store");
 var globby_1 = require("globby");
+var through = require("through2");
 var path_1 = require("path");
 var fs_1 = require("fs");
+var rimraf_1 = require("rimraf");
+var mkdirp_1 = require("mkdirp");
+var multimatch = require("multimatch");
+var os_1 = require("os");
+var store_1 = require("./store");
 var interfaces_1 = require("./interfaces");
 var chek_1 = require("chek");
-var multimatch = require("multimatch");
 var GLOB_DEFAULTS = {};
 var MustrFileSys = (function (_super) {
     __extends(MustrFileSys, _super);
@@ -32,13 +36,20 @@ var MustrFileSys = (function (_super) {
     MustrFileSys.prototype.extendOptions = function (options) {
         return chek_1.extend({}, GLOB_DEFAULTS, options);
     };
-    MustrFileSys.prototype.basedir = function (files, relative) {
+    /**
+     * Common Dir
+     * : Finds common path directory in array of paths.
+     *
+     * @param paths the file paths to find common directory for.
+     * @param relative optional relative paths
+     */
+    MustrFileSys.prototype.commonDir = function (paths, relative) {
         var _this = this;
         if (relative)
-            files = chek_1.toArray(relative).map(function (f) { return path_1.resolve(files, f); });
+            paths = chek_1.toArray(relative).map(function (f) { return path_1.resolve(paths, f); });
         // splits path by fwd or back slashes.
         var splitPath = function (p) { return p.split((/\/+|\\+/)); };
-        var result = files
+        var result = paths
             .slice(1)
             .reduce(function (p, f) {
             if (!f.match(/^([A-Za-z]:)?\/|\\/))
@@ -48,7 +59,7 @@ var MustrFileSys = (function (_super) {
             while (p[i] === f[i] && i < Math.min(p.length, s.length))
                 i++;
             return p.slice(0, i); // slice match.
-        }, splitPath(files[0]));
+        }, splitPath(paths[0]));
         return result.length > 1 ? result.join('/') : '/';
     };
     /**
@@ -59,49 +70,6 @@ var MustrFileSys = (function (_super) {
      */
     MustrFileSys.prototype.normalizeFile = function (path) {
         return chek_1.isString(path) ? this.store.get(path) : path;
-    };
-    MustrFileSys.prototype.normalizePath = function (path) {
-    };
-    /**
-     * Globify
-     * : Ensures file path is glob or append pattern.
-     *
-     * @param path the path or array of path and pattern.
-     */
-    MustrFileSys.prototype.globify = function (path) {
-        var _this = this;
-        if (chek_1.isArray(path))
-            return path.reduce(function (f, p) { return f.concat(_this.globify(p)); });
-        if (globby_1.hasMagic(path))
-            return path;
-        if (!fs_1.existsSync(path))
-            return [path, '**'];
-        var stats = fs_1.statSync(path);
-        if (stats.isFile())
-            return path;
-        if (stats.isDirectory())
-            return path_1.join(path, '**');
-        throw this.error('MustrFileSys', 'path is neither a file or directory.');
-    };
-    /**
-     * Exists
-     * : Checks if a file exists in the store.
-     *
-     * @param path a path or file to inspect if exists.
-     */
-    MustrFileSys.prototype.exists = function (path) {
-        var file = this.normalizeFile(path);
-        return file.state !== interfaces_1.VinylState.deleted;
-    };
-    /**
-     * Is Empty
-     * : Checks if file contents are null.
-     *
-     * @param path a path or file to inspect if is empty.
-     */
-    MustrFileSys.prototype.isEmpty = function (path) {
-        var file = this.normalizeFile(path);
-        return file && file.contents === null;
     };
     /**
      * Exists With Value
@@ -153,6 +121,47 @@ var MustrFileSys = (function (_super) {
         };
     };
     /**
+     * Globify
+     * : Ensures file path is glob or append pattern.
+     *
+     * @param path the path or array of path and pattern.
+     */
+    MustrFileSys.prototype.globify = function (path) {
+        var _this = this;
+        if (chek_1.isArray(path))
+            return path.reduce(function (f, p) { return f.concat(_this.globify(p)); });
+        if (globby_1.hasMagic(path))
+            return path;
+        if (!fs_1.existsSync(path))
+            return [path, '**'];
+        var stats = fs_1.statSync(path);
+        if (stats.isFile())
+            return path;
+        if (stats.isDirectory())
+            return path_1.join(path, '**');
+        throw this.error('MustrFileSys', 'path is neither a file or directory.');
+    };
+    /**
+     * Exists
+     * : Checks if a file exists in the store.
+     *
+     * @param path a path or file to inspect if exists.
+     */
+    MustrFileSys.prototype.exists = function (path) {
+        var file = this.normalizeFile(path);
+        return file.state !== interfaces_1.VinylState.deleted;
+    };
+    /**
+     * Is Empty
+     * : Checks if file contents are null.
+     *
+     * @param path a path or file to inspect if is empty.
+     */
+    MustrFileSys.prototype.isEmpty = function (path) {
+        var file = this.normalizeFile(path);
+        return file && file.contents === null;
+    };
+    /**
      * Read
      * : Reads a file or path returns interace for
      * reading as Buffer, JSON, or String.
@@ -191,23 +200,43 @@ var MustrFileSys = (function (_super) {
             throw this.error('MustrFileSys', "cannot write " + file.relative + " expected Buffer or String but got " + typeof contents);
         if (chek_1.isPlainObject(contents))
             contents = JSON.stringify(chek_1.extend(contents, props));
-        file.state = this.isEmpty(file) ? interfaces_1.VinylState.new : interfaces_1.VinylState.modified;
+        file.new = this.isEmpty(file);
+        file.state = interfaces_1.VinylState.modified;
         if (stat)
             file.stat = stat;
         file.contents = chek_1.isString(contents) ? new Buffer(contents) : contents;
         this.store.set(file);
         return this.readAs(file, file.contents);
     };
-    MustrFileSys.prototype.copy = function (src, dest, options) {
+    /**
+     * Copy
+     * : Copies source to destination or multiple sources to destination.
+     *
+     * @param from the path or paths as from source.
+     * @param to the path or destination to.
+     * @param options the glob options or content transform.
+     * @param transform method for transforming content.
+     */
+    MustrFileSys.prototype.copy = function (from, to, options, transform) {
         var _this = this;
-        var copyFile = function (f, t, o) {
-            if (!_this.exists(f))
-                throw _this.error('MustrFileSys', "cannot copy from source " + f + " the path does NOT exist.");
+        var copyFile = function (_from, _to) {
+            if (!_this.exists(_from))
+                throw _this.error('MustrFileSys', "cannot copy from source " + _from + " the path does NOT exist.");
+            var file = _this.store.get(_from);
+            var contents = file.contents;
+            if (transform)
+                contents = transform(contents, file.path);
+            _this.write(_to, contents, file.stat);
         };
-        dest = path_1.resolve(dest); // resolve output path from cwd.
-        options = this.extendOptions(options);
+        if (chek_1.isFunction(options)) {
+            transform = options;
+            options = undefined;
+        }
+        var rootPath;
+        to = path_1.resolve(to); // resolve output path from cwd.
+        options = (options || {});
         options.nodir = options.nodir || true; // exclude dir.
-        var paths = globby_1.sync(this.globify(src), options);
+        var paths = globby_1.sync(this.globify(from), options);
         var matches = [];
         this.store.each(function (f) {
             if (multimatch([f.path], paths))
@@ -216,10 +245,17 @@ var MustrFileSys = (function (_super) {
         paths = paths.concat(matches); // concat glob paths w/ store matches.
         if (!paths.length)
             throw this.error('MustrFileSys', "cannot copy using paths of undefined.");
-        if (chek_1.isArray(src) || globby_1.hasMagic(src) || (!chek_1.isArray(src) && !this.exists(src))) {
-            if (!this.exists(dest) || !chek_1.isDirectory(dest))
+        if (chek_1.isArray(from) || globby_1.hasMagic(from) || (!chek_1.isArray(from) && !this.exists(from))) {
+            if (!this.exists(to) || !chek_1.isDirectory(to))
                 throw this.error('MustrFileSys', 'destination must must be directory when copying multiple.');
+            rootPath = this.commonDir(from);
         }
+        paths.forEach(function (f) {
+            if (rootPath)
+                copyFile(from, path_1.join(from, path_1.relative(rootPath, f)));
+            else
+                copyFile(f, to);
+        });
     };
     /**
      * Move
@@ -233,8 +269,21 @@ var MustrFileSys = (function (_super) {
         this.copy(from, to, options);
         this.remove(from, options);
     };
-    MustrFileSys.prototype.append = function () {
-        //
+    /**
+     * Append
+     * : Appends a file with the specified contents.
+     *
+     * @param to the path of the file to append to.
+     * @param content the content to be appended.
+     * @param trim whether to not to trim trailing space.
+     */
+    MustrFileSys.prototype.append = function (to, content, trim) {
+        var contents = this.read(to)
+            .asString();
+        trim = !chek_1.isUndefined(trim) ? trim : true;
+        if (trim)
+            contents = contents.replace(/\s+$/, '');
+        this.write(to, contents + os_1.EOL + content);
     };
     /**
      * Remove
@@ -248,7 +297,7 @@ var MustrFileSys = (function (_super) {
         options = this.extendOptions(options);
         var removeFile = function (p) {
             var f = _this.store.get(p);
-            f.state = 'deleted';
+            f.state = interfaces_1.VinylState.deleted;
             f.contents = null;
             _this.store.set(f);
         };
@@ -262,26 +311,49 @@ var MustrFileSys = (function (_super) {
                 removeFile(f.path);
         });
     };
-    MustrFileSys.prototype.save = function () {
+    /**
+     * Save
+     * : Saves to store.
+     *
+     * @param filters transform filters which will be piped to stream.
+     * @param fn a callback function on done.
+     */
+    MustrFileSys.prototype.save = function (filters, fn) {
+        if (chek_1.isFunction(filters)) {
+            fn = filters;
+            filters = undefined;
+        }
+        var self = this;
+        var store = this.store;
+        filters = filters || [];
+        var modifiy = through.obj(function (file, enc, done) {
+            if (file.state === interfaces_1.VinylState.modified || (file.state === interfaces_1.VinylState.deleted && !file.new))
+                this.push(file);
+            done();
+        });
+        filters = [modifiy].concat(filters);
+        var save = through.obj(function (file, enc, done) {
+            store.set(file);
+            if (file.state === interfaces_1.VinylState.modified) {
+                var dir = path_1.dirname(file.path);
+                if (!fs_1.existsSync(dir))
+                    mkdirp_1.sync(dir);
+                fs_1.writeFileSync(file.path, file.contents, {
+                    mode: file.stat ? file.stat.mode : null
+                });
+            }
+            else if (file.state === interfaces_1.VinylState.deleted) {
+                rimraf_1.sync(file.path);
+            }
+            delete file.state;
+            delete file.new;
+            done();
+        });
+        filters.push(save);
+        var stream = filters.reduce(function (stream, filter) {
+            return stream.pipe(filter);
+        }, this.store.stream());
     };
-    Object.defineProperty(MustrFileSys.prototype, "fs", {
-        get: function () {
-            return {
-                read: this.read.bind(this),
-                write: this.write.bind(this),
-                copy: this.copy.bind(this),
-                move: this.move.bind(this),
-                append: this.append.bind(this),
-                remove: this.remove.bind(this),
-                save: this.save.bind(this),
-                exists: this.exists.bind(this),
-                isEmpty: this.isEmpty.bind(this),
-                globify: this.globify.bind(this)
-            };
-        },
-        enumerable: true,
-        configurable: true
-    });
     return MustrFileSys;
 }(store_1.MustrStore));
 exports.MustrFileSys = MustrFileSys;
